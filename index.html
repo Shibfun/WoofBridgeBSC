@@ -106,19 +106,15 @@
             blockExplorerUrls: ['https://shibariumscan.io']
         };
 
-        // 从 Reown Cloud 获取的 Project ID（请替换为你的实际 Project ID）
-        const projectId = 'a3db877ea5d6bea3c67439417a5b67ee'; // 替换为你在 https://cloud.reown.com/app 获取的 Project ID
-
-        if (!projectId || projectId === 'a3db877ea5d6bea3c67439417a5b67ee') {
-            alert('请在 https://cloud.reown.com/app 创建项目并替换 Project ID！');
-        }
+        // 使用你提供的 Project ID
+        const projectId = 'e2c11ea0fe8a1f9a16b9971803355dd9';
 
         // 初始化 Reown AppKit
         const networks = [shibariumMainnet];
         const metadata = {
             name: 'Wallet Connection Test',
             description: 'A simple wallet connection test using Reown AppKit',
-            url: 'https://shibfun.github.io/test1/', // 替换为你的实际域名
+            url: 'https://shibfun.github.io/test1/', // 本地测试用 localhost，正式部署需要替换为实际域名
             icons: ['https://avatars.githubusercontent.com/u/179229932']
         };
 
