@@ -1,1 +1,233 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connection Test with Web3Modal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Web3Modal 和相关依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/@web3modal/standalone@2.4.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e2a44, #2c3e50);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .header { padding: 20px; text-align: center; width: 100%; }
+        .header h1 { font-size: 2em; color: #F4A261; margin-bottom: 20px; }
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .section {
+            background: rgba(44, 62, 80, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            border: 1px solid #F4A261;
+        }
+        .section-title {
+            font-size: 1.3em;
+            color: #F4A261;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        button {
+            background: #F4A261;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background: #E07A5F;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+        }
+        button.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .info-panel {
+            background: #34495E;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #fff;
+            line-height: 1.6;
+        }
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.5em; }
+            button { padding: 10px 15px; font-size: 0.9em; }
+            .section { padding: 15px; }
+            .container { max-width: 100%; padding: 0 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Wallet Connection Test</h1>
+    </div>
+    <div class="container">
+        <div class="section">
+            <div class="section-title">Connect Wallet</div>
+            <button id="connectButton">Connect Wallet</button>
+            <div class="info-panel">Wallet: <span id="walletAddress">Not connected</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Shibarium 网络配置
+        const shibariumMainnet = {
+            chainId: 109,
+            chainName: 'Shibarium',
+            nativeCurrency: { name: 'BONE', symbol: 'BONE', decimals: 18 },
+            rpcUrls: ['https://www.shibrpc.com'],
+            blockExplorerUrls: ['https://shibariumscan.io']
+        };
+
+        // 初始化 Web3Modal
+        const web3Modal = new Web3Modal.StandaloneWeb3Modal({
+            cacheProvider: false, // 不缓存 provider
+            providerOptions: {
+                walletconnect: {
+                    package: WalletConnectProvider,
+                    options: {
+                        rpc: { 109: 'https://www.shibrpc.com' },
+                        chainId: 109
+                    }
+                }
+            },
+            theme: {
+                background: '#2C3E50',
+                main: '#FFFFFF',
+                secondary: '#A8B5D4',
+                border: '#F4A261',
+                hover: '#E07A5F'
+            }
+        });
+
+        let web3, provider, accounts;
+
+        async function updateUserAddress() {
+            if (!accounts) {
+                document.getElementById('walletAddress').innerText = 'Not connected';
+            } else {
+                const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                document.getElementById('walletAddress').innerText = shortAddress;
+            }
+        }
+
+        async function connectWallet() {
+            const connectButton = document.getElementById('connectButton');
+            try {
+                connectButton.classList.add('loading');
+                connectButton.innerText = 'Connecting...';
+
+                // 通过 Web3Modal 连接钱包
+                provider = await web3Modal.connect();
+                web3 = new Web3(provider);
+                accounts = await web3.eth.getAccounts();
+
+                if (!accounts.length) {
+                    alert('未找到账户，请连接您的钱包。');
+                    return;
+                }
+
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 109) {
+                    try {
+                        await provider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: web3.utils.numberToHex(109) }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await provider.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [shibariumMainnet]
+                            });
+                        } else {
+                            alert('无法切换网络，请手动切换到 Shibarium。');
+                            return;
+                        }
+                    }
+                }
+
+                alert('成功连接到 Shibarium！🎉');
+                updateUserAddress();
+            } catch (error) {
+                alert(`连接失败：${error.message}`);
+            } finally {
+                connectButton.classList.remove('loading');
+                connectButton.innerText = 'Connect Wallet';
+            }
+        }
+
+        // 事件监听：处理断开连接和网络切换
+        if (provider && provider.on) {
+            provider.on('accountsChanged', (newAccounts) => {
+                accounts = newAccounts;
+                if (newAccounts.length) {
+                    updateUserAddress();
+                } else {
+                    alert('钱包已断开连接，请重新连接。');
+                    web3 = null;
+                    provider = null;
+                    accounts = null;
+                    updateUserAddress();
+                }
+            });
+
+            provider.on('chainChanged', (chainId) => {
+                if (parseInt(chainId) !== 109) {
+                    alert('切换到错误的网络，请重新连接到 Shibarium。');
+                    web3 = null;
+                    provider = null;
+                    accounts = null;
+                    updateUserAddress();
+                } else {
+                    connectWallet();
+                }
+            });
+
+            provider.on('disconnect', () => {
+                alert('钱包已断开连接，请重新连接。');
+                web3 = null;
+                provider = null;
+                accounts = null;
+                updateUserAddress();
+            });
+        }
+
+        // 绑定连接按钮
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.startsWith('http')) {
+                alert('请通过本地服务器运行此页面（例如 "npx serve"），以连接钱包。');
+            }
+        });
+    </script>
+</body>
+</html>
