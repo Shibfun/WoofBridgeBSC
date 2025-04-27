@@ -1,1 +1,668 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woofswap - Cross-Chain Bridge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            position: relative;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .connect-section button {
+            padding: 12px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+        .connect-section button:hover { background: #e68a00; }
+        .swap-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        .chain-select, .token-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .chain-select select {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1em;
+            cursor: pointer;
+            outline: none;
+        }
+        .chain-select select option {
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+        .token-display div {
+            display: flex;
+            align-items: center;
+        }
+        .token-display img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
+            text-align: right;
+        }
+        .percentage-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .percentage-buttons button {
+            padding: 5px 10px;
+            background: #4a4f7a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: var(--text-color);
+            flex: 1;
+        }
+        .percentage-buttons button:hover { background: #5a5f8a; }
+        .switch-button {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .switch-button button {
+            padding: 10px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .swap-button {
+            padding: 15px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .swap-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .swap-button:hover:not(:disabled), .switch-button button:hover { background: #e68a00; }
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .swap-note {
+            font-size: 0.9em;
+            color: #ff9100;
+            margin-top: 5px;
+            text-align: left;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .dog-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .dog-section img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .dog-message {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+            .percentage-buttons button { padding: 5px; }
+            .dog-section img { width: 50px; height: 50px; }
+            .dog-message { font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Woofswap - Cross-Chain Bridge</div>
+        <div class="connect-section">
+            <button id="connectWalletButton">Connect Wallet</button>
+            <div id="networkStatus" class="status">Click to connect...</div>
+        </div>
+        <div class="swap-box">
+            <div class="balance-row">
+                <span>From</span>
+                <span id="fromBalance">Balance: 0</span>
+            </div>
+            <div class="chain-select">
+                <select id="fromChain" onchange="updateChains()">
+                    <option value="Shibarium">Shibarium</option>
+                    <option value="Base">Base</option>
+                </select>
+            </div>
+            <div class="token-display">
+                <div>
+                    <img src="https://www.woofswap.finance/image/tokens/luisa.png" alt="LUISA">
+                    <span>LUISA</span>
+                </div>
+            </div>
+            <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
+            <div class="percentage-buttons">
+                <button onclick="setPercentage(25)">25%</button>
+                <button onclick="setPercentage(50)">50%</button>
+                <button onclick="setPercentage(75)">75%</button>
+                <button onclick="setPercentage(100)">MAX</button>
+            </div>
+        </div>
+        <div class="switch-button">
+            <button onclick="switchChains()">↓↑</button>
+        </div>
+        <div class="swap-box">
+            <div class="balance-row">
+                <span>To</span>
+                <span id="toBalance">Balance: 0</span>
+            </div>
+            <div class="chain-select">
+                <span id="toChain"></span>
+            </div>
+            <div class="token-display">
+                <div>
+                    <img src="https://www.woofswap.finance/image/tokens/luisa.png" alt="LUISA">
+                    <span>LUISA</span>
+                </div>
+            </div>
+            <input type="text" id="receiverAddress" placeholder="Receiver Address (defaults to your address)">
+            <div class="swap-note" id="swapNote">Cross-chain transfer powered by Chainlink CCIP</div>
+        </div>
+        <button class="swap-button" id="swapButton" onclick="initiateCrossChainTransfer()">Initiate Transfer</button>
+        <div class="dog-section">
+            <img src="images/shiba.gif" alt="Shiba Dog">
+            <div class="dog-message" id="dogMessage">"Woof! Connect your wallet to start bridging, pup!"</div>
+        </div>
+    </div>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://unpkg.com/@metamask/detect-provider@2.0.0/dist/detect-provider.min.js"></script>
+    <script>
+        const chains = {
+            Shibarium: {
+                chainId: 109,
+                chainName: 'Shibarium',
+                rpcUrl: 'https://rpc.shibrpc.com',
+                poolAddress: '0xca8facd0eb11deb6114d515d136c79c6f4170e87',
+                tokenAddress: '0x0ccd687cc6f8461170336d8e8cf46a39313deab9',
+                chainSelector: '4051577827741608506', // Shibarium chain selector
+                mechanism: 'Lock & Release'
+            },
+            Base: {
+                chainId: 8453,
+                chainName: 'Base',
+                rpcUrl: 'https://mainnet.base.org',
+                poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
+                tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46',
+                chainSelector: '15971525489660198786', // Base chain selector
+                mechanism: 'Burn & Mint'
+            }
+        };
+
+        const poolAbi = [{"inputs":[{"internalType":"contract IBurnMintERC20","name":"token","type":"address"},{"internalType":"uint8","name":"localTokenDecimals","type":"uint8"},{"internalType":"address[]","name":"allowlist","type":"address[]"},{"internalType":"address","name":"rmnProxy","type":"address"},{"internalType":"address","name":"router","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"uint256","name":"capacity","type":"uint256"},{"internalType":"uint256","name":"requested","type":"uint256"}],"name":"AggregateValueMaxCapacityExceeded","type":"error"},{"inputs":[{"internalType":"uint256","name":"minWaitInSeconds","type":"uint256"},{"internalType":"uint256","name":"available","type":"uint256"}],"name":"AggregateValueRateLimitReached","type":"error"},{"inputs":[],"name":"AllowListNotEnabled","type":"error"},{"inputs":[],"name":"BucketOverfilled","type":"error"},{"inputs":[{"internalType":"address","name":"caller","type":"address"}],"name":"CallerIsNotARampOnRouter","type":"error"},{"inputs":[],"name":"CannotTransferToSelf","type":"error"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"ChainAlreadyExists","type":"error"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"ChainNotAllowed","type":"error"},{"inputs":[],"name":"CursedByRMN","type":"error"},{"inputs":[{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"config","type":"tuple"}],"name":"DisabledNonZeroRateLimit","type":"error"},{"inputs":[{"internalType":"uint8","name":"expected","type":"uint8"},{"internalType":"uint8","name":"actual","type":"uint8"}],"name":"InvalidDecimalArgs","type":"error"},{"inputs":[{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"rateLimiterConfig","type":"tuple"}],"name":"InvalidRateLimitRate","type":"error"},{"inputs":[{"internalType":"bytes","name":"sourcePoolData","type":"bytes"}],"name":"InvalidRemoteChainDecimals","type":"error"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"InvalidRemotePoolForChain","type":"error"},{"inputs":[{"internalType":"bytes","name":"sourcePoolAddress","type":"bytes"}],"name":"InvalidSourcePoolAddress","type":"error"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"InvalidToken","type":"error"},{"inputs":[],"name":"MustBeProposedOwner","type":"error"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"NonExistentChain","type":"error"},{"inputs":[],"name":"OnlyCallableByOwner","type":"error"},{"inputs":[{"internalType":"uint8","name":"remoteDecimals","type":"uint8"},{"internalType":"uint8","name":"localDecimals","type":"uint8"},{"internalType":"uint256","name":"remoteAmount","type":"uint256"}],"name":"OverflowDetected","type":"error"},{"inputs":[],"name":"OwnerCannotBeZero","type":"error"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"PoolAlreadyAdded","type":"error"},{"inputs":[],"name":"RateLimitMustBeDisabled","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"SenderNotAllowed","type":"error"},{"inputs":[{"internalType":"uint256","name":"capacity","type":"uint256"},{"internalType":"uint256","name":"requested","type":"uint256"},{"internalType":"address","name":"tokenAddress","type":"address"}],"name":"TokenMaxCapacityExceeded","type":"error"},{"inputs":[{"internalType":"uint256","name":"minWaitInSeconds","type":"uint256"},{"internalType":"uint256","name":"available","type":"uint256"},{"internalType":"address","name":"tokenAddress","type":"address"}],"name":"TokenRateLimitReached","type":"error"},{"inputs":[{"internalType":"address","name":"caller","type":"address"}],"name":"Unauthorized","type":"error"},{"inputs":[],"name":"ZeroAddressNotAllowed","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"AllowListAdd","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"AllowListRemove","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burned","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"indexed":false,"internalType":"bytes","name":"remoteToken","type":"bytes"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"indexed":false,"internalType":"struct RateLimiter.Config","name":"outboundRateLimiterConfig","type":"tuple"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"indexed":false,"internalType":"struct RateLimiter.Config","name":"inboundRateLimiterConfig","type":"tuple"}],"name":"ChainAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"indexed":false,"internalType":"struct RateLimiter.Config","name":"outboundRateLimiterConfig","type":"tuple"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"indexed":false,"internalType":"struct RateLimiter.Config","name":"inboundRateLimiterConfig","type":"tuple"}],"name":"ChainConfigured","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"ChainRemoved","type":"event"},{"anonymous":false,"inputs":[{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"indexed":false,"internalType":"struct RateLimiter.Config","name":"config","type":"tuple"}],"name":"ConfigChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Locked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Minted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"rateLimitAdmin","type":"address"}],"name":"RateLimitAdminSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Released","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"indexed":false,"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"RemotePoolAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"indexed":false,"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"RemotePoolRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldRouter","type":"address"},{"indexed":false,"internalType":"address","name":"newRouter","type":"address"}],"name":"RouterUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"tokens","type":"uint256"}],"name":"TokensConsumed","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"addRemotePool","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address[]","name":"removes","type":"address[]"},{"internalType":"address[]","name":"adds","type":"address[]"}],"name":"applyAllowListUpdates","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64[]","name":"remoteChainSelectorsToRemove","type":"uint64[]"},{"components":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes[]","name":"remotePoolAddresses","type":"bytes[]"},{"internalType":"bytes","name":"remoteTokenAddress","type":"bytes"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"outboundRateLimiterConfig","type":"tuple"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"inboundRateLimiterConfig","type":"tuple"}],"internalType":"struct TokenPool.ChainUpdate[]","name":"chainsToAdd","type":"tuple[]"}],"name":"applyChainUpdates","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getAllowList","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getAllowListEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"getCurrentInboundRateLimiterState","outputs":[{"components":[{"internalType":"uint128","name":"tokens","type":"uint128"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"},{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.TokenBucket","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"getCurrentOutboundRateLimiterState","outputs":[{"components":[{"internalType":"uint128","name":"tokens","type":"uint128"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"},{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.TokenBucket","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getRateLimitAdmin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"getRemotePools","outputs":[{"internalType":"bytes[]","name":"","type":"bytes[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"getRemoteToken","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getRmnProxy","outputs":[{"internalType":"address","name":"rmnProxy","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getRouter","outputs":[{"internalType":"address","name":"router","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getSupportedChains","outputs":[{"internalType":"uint64[]","name":"","type":"uint64[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getToken","outputs":[{"internalType":"contract IERC20","name":"token","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTokenDecimals","outputs":[{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"isRemotePool","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"}],"name":"isSupportedChain","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"isSupportedToken","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"address","name":"originalSender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address","name":"localToken","type":"address"}],"internalType":"struct Pool.LockOrBurnInV1","name":"lockOrBurnIn","type":"tuple"}],"name":"lockOrBurn","outputs":[{"components":[{"internalType":"bytes","name":"destTokenAddress","type":"bytes"},{"internalType":"bytes","name":"destPoolData","type":"bytes"}],"internalType":"struct Pool.LockOrBurnOutV1","name":"","type":"tuple"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"bytes","name":"originalSender","type":"bytes"},{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address","name":"localToken","type":"address"},{"internalType":"bytes","name":"sourcePoolAddress","type":"bytes"},{"internalType":"bytes","name":"sourcePoolData","type":"bytes"},{"internalType":"bytes","name":"offchainTokenData","type":"bytes"}],"internalType":"struct Pool.ReleaseOrMintInV1","name":"releaseOrMintIn","type":"tuple"}],"name":"releaseOrMint","outputs":[{"components":[{"internalType":"uint256","name":"destinationAmount","type":"uint256"}],"internalType":"struct Pool.ReleaseOrMintOutV1","name":"","type":"tuple"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"internalType":"bytes","name":"remotePoolAddress","type":"bytes"}],"name":"removeRemotePool","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"remoteChainSelector","type":"uint64"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"outboundConfig","type":"tuple"},{"components":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint128","name":"capacity","type":"uint128"},{"internalType":"uint128","name":"rate","type":"uint128"}],"internalType":"struct RateLimiter.Config","name":"inboundConfig","type":"tuple"}],"name":"setChainRateLimiterConfig","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"rateLimitAdmin","type":"address"}],"name":"setRateLimitAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newRouter","type":"address"}],"name":"setRouter","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+        
+        const erc20Abi = [
+            {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},
+            {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"type":"function"},
+            {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
+        ];
+
+        const burnMintErc20Abi = [{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimals_","type":"uint8"},{"internalType":"uint256","name":"maxSupply_","type":"uint256"},{"internalType":"uint256","name":"preMint","type":"uint256"},{"internalType":"address","name":"newOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"CannotTransferToSelf","type":"error"},{"inputs":[{"internalType":"uint256","name":"supplyAfterMint","type":"uint256"}],"name":"MaxSupplyExceeded","type":"error"},{"inputs":[],"name":"MustBeProposedOwner","type":"error"},{"inputs":[],"name":"OnlyCallableByOwner","type":"error"},{"inputs":[],"name":"OwnerCannotBeZero","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"SenderNotBurner","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"SenderNotMinter","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"burner","type":"address"}],"name":"BurnAccessGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"burner","type":"address"}],"name":"BurnAccessRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":true,"internalType":"address","name":"newAdmin","type":"address"}],"name":"CCIPAdminTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"minter","type":"address"}],"name":"MintAccessGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"minter","type":"address"}],"name":"MintAccessRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"internalType":"bool","name":"success","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getBurners","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getCCIPAdmin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMinters","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"grantBurnRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"burnAndMinter","type":"address"}],"name":"grantMintAndBurnRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"grantMintRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"isBurner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"isMinter","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"revokeBurnRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"revokeMintRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAdmin","type":"address"}],"name":"setCCIPAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+        let provider, signer, account;
+        let fromChain = 'Shibarium';
+        let toChain = 'Base';
+        let fromBalance = '0';
+        let toBalance = '0';
+        let currentPoolContract, currentTokenContract;
+
+        const dogMessages = {
+            connectStart: ["Woof woof! Sniffing out your wallet, hold tight, human!", "Arf! Digging into the chain, let’s fetch that wallet!", "Bow wow! Connecting to your stash, stay pawsitive!", "Woof! I smell a wallet, let’s link it up quick!"],
+            connectSuccess: ["Arf arf! You’re in, pup! Time to bridge some LUISA!", "Woof! Wallet’s hooked, ready to cross chains!", "Yip yip! Connected, hooman! Let’s move those tokens!", "Bow wow! Welcome aboard, let’s bridge LUISA!"],
+            connectFail: ["Grrr... Wallet slipped away, try again, hooman!", "Woof? No wallet scent detected, give it another go!", "Arf arf! Something barked up, retry connecting, pup!", "Ruff! Wallet’s hiding, let’s dig it out again!"],
+            switchChains: ["Woof woof! Flipping chains like a Shib pro, huh?", "Arf! Switching paths, let’s keep the tail wagging!", "Bow wow! Chain switcheroo, you’re a clever pup!", "Ruff ruff! Mixing it up, let’s see where we land!"],
+            setPercentage: (percent) => [`Woof! ${percent}% in? You’re a bold Shib, hooman!`, `Arf arf! Going ${percent}%? Let’s bridge that amount!`, `Bow wow! ${percent}% of the stash? Pawsitively daring!`, `Yip! ${percent}%? You’re moving big LUISA today!`],
+            transferStart: ["Woof woof! Starting the bridge, let’s move those LUISA!", "Arf! Launching the transfer, hold onto your leash, pup!", "Bow wow! Crossing chains, here we go, Shib style!", "Yip! Bridging in CCIP, let’s make it pawsome!"],
+            transferSuccess: ["Arf arf! Tokens locked/burned, switch chains to release/mint!", "Woof! Step one done, now switch to the other chain, pup!", "Bow wow! Locked/burned like a pro, time to switch chains!", "Yip yip! First step complete, switch chains to finish!"],
+            transferFail: ["Grrr... Bridge didn’t work, let’s try again, pup!", "Woof? Transfer got lost, retry it, clever hooman!", "Arf! Token move failed, another go, Shib friend?", "Ruff ruff! Bridge slipped, let’s dig it up again!"],
+            transferNoAmount: ["Arf! No amount? How am I supposed to bridge air?!", "Woof woof! Gimme a number, pup, or we’re stuck!", "Bow wow! Empty transfer? Fill it up, hooman!", "Ruff! Amount’s missing, let’s fetch some digits!"],
+            approving: ["Woof! Approving your tokens, hold on, pup!", "Arf! Sniffing out approval, almost there, hooman!", "Bow wow! Authorizing the transfer, stay pawsitive!", "Ruff! Getting ready to bridge, approving now!"],
+            userDenied: ["Woof woof! You scared me off, hooman! Approve next time, pup!", "Arf! No bridge today? You’re a tricky one, let’s try again!", "Bow wow! Rejected my transfer? Give me a bone next time!", "Ruff ruff! You denied me, hooman! Let’s wag back later!"],
+            switchChainStart: ["Woof! Switching chains, let’s fetch those tokens!", "Arf! Jumping to the other chain, hold tight, pup!", "Bow wow! Chain switch in progress, stay with me!", "Yip! Moving to the next chain, here we go!"],
+            switchChainFail: ["Grrr... Chain switch failed, try again, hooman!", "Woof? Couldn’t jump chains, let’s retry, pup!", "Arf! Chain switch barked up, give it another go!", "Ruff! Stuck on this chain, let’s try switching again!"],
+            releaseStart: ["Woof woof! Releasing/minting your LUISA, let’s finish this!", "Arf! Final step, fetching your tokens now, pup!", "Bow wow! Unlocking your LUISA, almost there!", "Yip! Minting/releasing, let’s wrap this up!"],
+            releaseSuccess: ["Arf arf! Bridge complete, your LUISA is here, pup!", "Woof! Tokens released/minted, you’re a cross-chain champ!", "Bow wow! All done, LUISA is on the other side!", "Yip yip! Transfer finished, you’re the top dog now!"],
+            releaseFail: ["Grrr... Couldn’t release/mint, let’s try again, pup!", "Woof? Final step failed, retry it, hooman!", "Arf! Tokens stuck, another go, Shib friend?", "Ruff ruff! Release/mint failed, let’s dig it up again!"]
+        };
+
+        function getRandomMessage(type, param1) {
+            const messages = dogMessages[type];
+            if (typeof messages === 'function') {
+                const options = messages(param1);
+                return options[Math.floor(Math.random() * options.length)];
+            }
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
+            setupWalletListeners();
+            updateChains();
+        });
+
+        async function connectWallet() {
+            const status = document.getElementById('networkStatus');
+            const connectButton = document.getElementById('connectWalletButton');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                if (!window.ethereum) throw new Error("No wallet detected. Please install MetaMask or another wallet.");
+                connectButton.disabled = true;
+                status.innerText = "Connecting...";
+                dogMessage.innerText = getRandomMessage('connectStart');
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                account = await signer.getAddress();
+                await switchChain(fromChain);
+                await initializeContracts();
+                updateUIAfterConnect();
+                await updateBalances();
+            } catch (error) {
+                status.innerText = "Failed: " + error.message;
+                dogMessage.innerText = getRandomMessage('connectFail');
+                console.error(error);
+                resetUI();
+            } finally {
+                connectButton.disabled = false;
+            }
+        }
+
+        async function switchChain(chainName) {
+            const chain = chains[chainName];
+            const chainIdHex = ethers.utils.hexlify(chain.chainId);
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: chainIdHex }]
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: chainIdHex,
+                            chainName: chain.chainName,
+                            rpcUrls: [chain.rpcUrl],
+                            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                            blockExplorerUrls: chain.chainName === 'Shibarium' ? ['https://shibariumscan.io'] : ['https://basescan.org']
+                        }]
+                    });
+                } else {
+                    throw switchError;
+                }
+            }
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+        }
+
+        async function initializeContracts() {
+            const chain = chains[fromChain];
+            currentPoolContract = new ethers.Contract(chain.poolAddress, poolAbi, signer);
+            currentTokenContract = new ethers.Contract(chain.tokenAddress, chain.mechanism === 'Burn & Mint' ? burnMintErc20Abi : erc20Abi, signer);
+        }
+
+        function updateUIAfterConnect() {
+            const connectButton = document.getElementById('connectWalletButton');
+            const status = document.getElementById('networkStatus');
+            const dogMessage = document.getElementById('dogMessage');
+            connectButton.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+            status.innerText = `Connected to ${fromChain}`;
+            dogMessage.innerText = getRandomMessage('connectSuccess');
+        }
+
+        function resetUI() {
+            const connectButton = document.getElementById('connectWalletButton');
+            const status = document.getElementById('networkStatus');
+            connectButton.textContent = "Connect Wallet";
+            status.innerText = "Click to connect...";
+        }
+
+        function setupWalletListeners() {
+            if (!window.ethereum) return;
+            window.ethereum.on('accountsChanged', async (newAccounts) => {
+                if (newAccounts.length) {
+                    account = newAccounts[0];
+                    if (provider) {
+                        await switchChain(fromChain);
+                        await initializeContracts();
+                        updateUIAfterConnect();
+                        await updateBalances();
+                    } else {
+                        await connectWallet();
+                    }
+                } else {
+                    provider = null;
+                    signer = null;
+                    account = null;
+                    currentPoolContract = null;
+                    currentTokenContract = null;
+                    resetUI();
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
+                }
+            });
+            window.ethereum.on('chainChanged', async (chainId) => {
+                const newChainId = parseInt(chainId, 16);
+                if (newChainId !== chains[fromChain].chainId) {
+                    provider = null;
+                    signer = null;
+                    account = null;
+                    currentPoolContract = null;
+                    currentTokenContract = null;
+                    resetUI();
+                    document.getElementById('networkStatus').innerText = `Wrong network. Switch to ${fromChain}.`;
+                    document.getElementById('dogMessage').innerText = `Woof! Wrong chain, pup! Switch to ${fromChain}!`;
+                } else if (account) {
+                    await connectWallet();
+                }
+            });
+        }
+
+        async function updateBalances() {
+            if (!provider || !account) return;
+            const fromChainConfig = chains[fromChain];
+            const toChainConfig = chains[toChain];
+            const fromTokenContract = new ethers.Contract(fromChainConfig.tokenAddress, fromChainConfig.mechanism === 'Burn & Mint' ? burnMintErc20Abi : erc20Abi, provider);
+            const toTokenContract = new ethers.Contract(toChainConfig.tokenAddress, toChainConfig.mechanism === 'Burn & Mint' ? burnMintErc20Abi : erc20Abi, new ethers.providers.JsonRpcProvider(toChainConfig.rpcUrl));
+            fromBalance = await fromTokenContract.balanceOf(account);
+            toBalance = await toTokenContract.balanceOf(account);
+            document.getElementById('fromBalance').innerText = `Balance: ${ethers.utils.formatUnits(fromBalance, 18)}`;
+            document.getElementById('toBalance').innerText = `Balance: ${ethers.utils.formatUnits(toBalance, 18)}`;
+        }
+
+        function updateChains() {
+            fromChain = document.getElementById('fromChain').value;
+            toChain = fromChain === 'Shibarium' ? 'Base' : 'Shibarium';
+            document.getElementById('toChain').innerText = toChain;
+            if (provider && account) {
+                switchChain(fromChain).then(() => {
+                    initializeContracts().then(updateBalances);
+                    document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
+                });
+            }
+        }
+
+        function switchChains() {
+            const dogMessage = document.getElementById('dogMessage');
+            fromChain = toChain;
+            toChain = fromChain === 'Shibarium' ? 'Base' : 'Shibarium';
+            document.getElementById('fromChain').value = fromChain;
+            document.getElementById('toChain').innerText = toChain;
+            if (provider && account) {
+                switchChain(fromChain).then(() => {
+                    initializeContracts().then(updateBalances);
+                    document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
+                });
+            }
+            dogMessage.innerText = getRandomMessage('switchChains');
+        }
+
+        function setPercentage(percentage) {
+            const dogMessage = document.getElementById('dogMessage');
+            if (!fromBalance || !provider) {
+                document.getElementById('networkStatus').innerText = "Please connect wallet first.";
+                dogMessage.innerText = getRandomMessage('connectFail');
+                return;
+            }
+            let amount;
+            if (percentage === 100) {
+                amount = ethers.utils.formatUnits(fromBalance, 18);
+            } else {
+                amount = ethers.utils.formatUnits(fromBalance, 18) * (percentage / 100);
+            }
+            document.getElementById('fromAmount').value = amount.toString();
+            dogMessage.innerText = getRandomMessage('setPercentage', percentage);
+        }
+
+        async function approveToken(tokenAddress, amount) {
+            const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, signer);
+            const allowance = await tokenContract.allowance(account, chains[fromChain].poolAddress);
+            if (allowance.lt(amount)) {
+                const swapButton = document.getElementById('swapButton');
+                const dogMessage = document.getElementById('dogMessage');
+                swapButton.textContent = "Authorizing...";
+                swapButton.disabled = true;
+                dogMessage.innerText = getRandomMessage('approving');
+                await tokenContract.approve(chains[fromChain].poolAddress, amount).then(tx => tx.wait());
+                document.getElementById('networkStatus').innerText = "Token approved";
+                swapButton.textContent = "Initiate Transfer";
+                swapButton.disabled = false;
+                dogMessage.innerText = "Woof! Tokens approved, ready to bridge!";
+            }
+        }
+
+        async function initiateCrossChainTransfer() {
+            const status = document.getElementById('networkStatus');
+            const swapButton = document.getElementById('swapButton');
+            const dogMessage = document.getElementById('dogMessage');
+            if (!provider || !account) {
+                status.innerText = "Please connect wallet first.";
+                dogMessage.innerText = getRandomMessage('connectFail');
+                return;
+            }
+            const amount = document.getElementById('fromAmount').value;
+            if (!amount || amount <= 0) {
+                status.innerText = "Please enter a valid amount.";
+                dogMessage.innerText = getRandomMessage('transferNoAmount');
+                return;
+            }
+            let receiver = document.getElementById('receiverAddress').value.trim();
+            if (!receiver) receiver = account;
+            if (!ethers.utils.isAddress(receiver)) {
+                status.innerText = "Invalid receiver address.";
+                dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
+                return;
+            }
+            const amountWei = ethers.utils.parseUnits(amount, 18);
+            if (amountWei.gt(fromBalance)) {
+                status.innerText = "Insufficient token balance.";
+                dogMessage.innerText = "Woof! Not enough LUISA to bridge, pup!";
+                return;
+            }
+            try {
+                swapButton.disabled = true;
+                status.innerText = "Processing transfer...";
+                dogMessage.innerText = getRandomMessage('transferStart');
+                await approveToken(chains[fromChain].tokenAddress, amountWei);
+                const lockOrBurnIn = {
+                    receiver: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(receiver)),
+                    remoteChainSelector: chains[toChain].chainSelector,
+                    originalSender: account,
+                    amount: amountWei,
+                    localToken: chains[fromChain].tokenAddress
+                };
+                const tx = await currentPoolContract.lockOrBurn(lockOrBurnIn);
+                const receipt = await tx.wait();
+                status.innerText = `${fromChain === 'Shibarium' ? 'Locked' : 'Burned'} successfully! Switching chains...`;
+                dogMessage.innerText = getRandomMessage('transferSuccess');
+                await switchChain(toChain);
+                status.innerText = `Switched to ${toChain}. Complete the transfer.`;
+                swapButton.textContent = "Complete Transfer";
+                swapButton.onclick = () => completeCrossChainTransfer(amountWei, receiver);
+                listenForEvents(receipt, fromChain);
+            } catch (error) {
+                console.error("Transfer failed:", error);
+                let errorMessage = error.message || "Unknown error";
+                if (error.message.includes("User denied transaction signature")) {
+                    errorMessage = "User denied transaction signature.";
+                    dogMessage.innerText = getRandomMessage('userDenied');
+                } else {
+                    dogMessage.innerText = getRandomMessage('transferFail');
+                }
+                status.innerText = errorMessage;
+                swapButton.disabled = false;
+            }
+        }
+
+        async function completeCrossChainTransfer(amount, receiver) {
+            const status = document.getElementById('networkStatus');
+            const swapButton = document.getElementById('swapButton');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                swapButton.disabled = true;
+                status.innerText = "Completing transfer...";
+                dogMessage.innerText = getRandomMessage('releaseStart');
+                const releaseOrMintIn = {
+                    originalSender: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(account)),
+                    remoteChainSelector: chains[fromChain].chainSelector,
+                    receiver: receiver,
+                    amount: amount,
+                    localToken: chains[toChain].tokenAddress,
+                    sourcePoolAddress: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(chains[fromChain].poolAddress)),
+                    sourcePoolData: "0x",
+                    offchainTokenData: "0x"
+                };
+                const tx = await currentPoolContract.releaseOrMint(releaseOrMintIn);
+                const receipt = await tx.wait();
+                status.innerText = "Transfer completed!";
+                dogMessage.innerText = getRandomMessage('releaseSuccess');
+                await updateBalances();
+                swapButton.textContent = "Initiate Transfer";
+                swapButton.onclick = initiateCrossChainTransfer;
+                listenForEvents(receipt, toChain);
+            } catch (error) {
+                console.error("Release/Mint failed:", error);
+                let errorMessage = error.message || "Unknown error";
+                if (error.message.includes("User denied transaction signature")) {
+                    errorMessage = "User denied transaction signature.";
+                    dogMessage.innerText = getRandomMessage('userDenied');
+                } else {
+                    dogMessage.innerText = getRandomMessage('releaseFail');
+                }
+                status.innerText = errorMessage;
+            } finally {
+                swapButton.disabled = false;
+            }
+        }
+
+        function listenForEvents(receipt, chainName) {
+            const status = document.getElementById('networkStatus');
+            if (chainName === 'Shibarium') {
+                const lockedEvent = receipt.events?.find(e => e.event === 'Locked');
+                if (lockedEvent) {
+                    const amount = ethers.utils.formatUnits(lockedEvent.args.amount, 18);
+                    status.innerText = `Locked ${amount} LUISA on Shibarium! Switching to Base...`;
+                }
+            } else if (chainName === 'Base') {
+                const burnedEvent = receipt.events?.find(e => e.event === 'Burned');
+                const mintedEvent = receipt.events?.find(e => e.event === 'Minted');
+                if (burnedEvent) {
+                    const amount = ethers.utils.formatUnits(burnedEvent.args.amount, 18);
+                    status.innerText = `Burned ${amount} LUISA on Base! Switching to Shibarium...`;
+                }
+                if (mintedEvent) {
+                    const amount = ethers.utils.formatUnits(mintedEvent.args.amount, 18);
+                    status.innerText = `Minted ${amount} LUISA on Base! Transfer complete.`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
