@@ -279,7 +279,7 @@
             Shibarium: {
                 chainId: 109,
                 chainName: 'Shibarium',
-                rpcUrl: 'https://shibarium-rpc.com',
+                rpcUrl: 'https://rpc.shibariumchain.com',
                 poolAddress: '0xca8facd0eb11deb6114d515d136c79c6f4170e87',
                 tokenAddress: '0x0ccd687cc6f8461170336d8e8cf46a39313deab9',
                 chainSelector: '4051577827741608506',
@@ -317,7 +317,7 @@
             chainId: 109,
             chainName: 'Shibarium',
             nativeCurrency: { name: 'BONE', symbol: 'BONE', decimals: 18 },
-            rpcUrls: ['https://shibarium-rpc.com'],
+            rpcUrls: ['https://rpc.shibariumchain.com'],
             blockExplorerUrls: ['https://shibariumscan.io']
         };
 
@@ -345,7 +345,8 @@
             switchChainFail: ["Grrr... Chain switch failed, try again, hooman!", "Woof? Couldn’t jump chains, let’s retry, pup!", "Arf! Chain switch barked up, give it another go!", "Ruff! Stuck on this chain, let’s try switching again!"],
             releaseStart: ["Woof woof! Releasing/minting your LUISA, let’s finish this!", "Arf! Final step, fetching your tokens now, pup!", "Bow wow! Unlocking your LUISA, almost there!", "Yip! Minting/releasing, let’s wrap this up!"],
             releaseSuccess: ["Arf arf! Bridge complete, your LUISA is here, pup!", "Woof! Tokens released/minted, you’re a cross-chain champ!", "Bow wow! All done, LUISA is on the other side!", "Yip yip! Transfer finished, you’re the top dog now!"],
-            releaseFail: ["Grrr... Couldn’t release/mint, let’s try again, pup!", "Woof? Final step failed, retry it, hooman!", "Arf! Tokens stuck, another go, Shib friend?", "Ruff ruff! Release/mint failed, let’s dig it up again!"]
+            releaseFail: ["Grrr... Couldn’t release/mint, let’s try again, pup!", "Woof? Final step failed, retry it, hooman!", "Arf! Tokens stuck, another go, Shib friend?", "Ruff ruff! Release/mint failed, let’s dig it up again!"],
+            notInAllowlist: ["Woof! You’re not on the VIP list, pup! Contact the admin to get added!", "Arf! No entry, hooman! Ask the contract admin to let you in!", "Bow wow! You need permission to bridge, pup! Reach out to the admin!", "Ruff! Not allowed yet, pup! Get the admin to add you!"]
         };
 
         function getRandomMessage(type, param1) {
@@ -567,14 +568,33 @@
             }
         }
 
+        async function checkAllowListEnabled() {
+            try {
+                const isEnabled = await currentPoolContract.methods.getAllowListEnabled().call();
+                console.log("Allowlist enabled:", isEnabled);
+                return isEnabled;
+            } catch (error) {
+                console.error("Failed to check allowlist enabled:", error);
+                return true; // 假设启用了，安全起见
+            }
+        }
+
         async function checkAllowList() {
             const status = document.getElementById('networkStatus');
             const dogMessage = document.getElementById('dogMessage');
             try {
+                const isAllowListEnabled = await checkAllowListEnabled();
+                if (!isAllowListEnabled) {
+                    console.log("Allowlist is not enabled, skipping check.");
+                    return true;
+                }
+
                 const allowList = await currentPoolContract.methods.getAllowList().call();
+                console.log("Allowlist:", allowList);
                 if (!allowList.includes(account)) {
                     status.innerText = "Sender not in allowlist.";
-                    dogMessage.innerText = "Woof! You’re not allowed to bridge, pup!";
+                    dogMessage.innerText = getRandomMessage('notInAllowlist');
+                    console.log("Sender not in allowlist, exiting.");
                     return false;
                 }
                 return true;
@@ -608,17 +628,32 @@
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const allowance = await tokenContract.methods.allowance(account, chains[fromChain].poolAddress).call();
+            console.log("Current allowance:", web3.utils.fromWei(allowance, 'ether'));
+            console.log("Requested amount:", web3.utils.fromWei(amount, 'ether'));
+
             if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
                 const swapButton = document.getElementById('swapButton');
                 const dogMessage = document.getElementById('dogMessage');
                 swapButton.textContent = "Authorizing...";
                 swapButton.disabled = true;
                 dogMessage.innerText = getRandomMessage('approving');
-                await tokenContract.methods.approve(chains[fromChain].poolAddress, amount).send({ from: account });
-                document.getElementById('networkStatus').innerText = "Token approved";
-                swapButton.textContent = "Initiate Transfer";
-                swapButton.disabled = false;
-                dogMessage.innerText = "Woof! Tokens approved, ready to bridge!";
+                console.log("Approving token...");
+                try {
+                    const tx = await tokenContract.methods.approve(chains[fromChain].poolAddress, amount).send({ from: account });
+                    console.log("Approval successful:", tx.transactionHash);
+                    document.getElementById('networkStatus').innerText = "Token approved";
+                    swapButton.textContent = "Initiate Transfer";
+                    swapButton.disabled = false;
+                    dogMessage.innerText = "Woof! Tokens approved, ready to bridge!";
+                } catch (error) {
+                    console.error("Approval failed:", error);
+                    document.getElementById('networkStatus').innerText = "Approval failed: " + error.message;
+                    dogMessage.innerText = "Woof! Token approval failed, pup!";
+                    swapButton.disabled = false;
+                    throw error;
+                }
+            } else {
+                console.log("Sufficient allowance, skipping approval.");
             }
         }
 
@@ -626,51 +661,80 @@
             const status = document.getElementById('networkStatus');
             const swapButton = document.getElementById('swapButton');
             const dogMessage = document.getElementById('dogMessage');
+            console.log("Initiate Transfer clicked, starting process...");
+
             if (!web3 || !account) {
                 status.innerText = "Please connect wallet first.";
                 dogMessage.innerText = getRandomMessage('connectFail');
+                console.log("Wallet not connected, exiting.");
+                swapButton.disabled = false;
                 return;
             }
+
             const amount = document.getElementById('fromAmount').value;
             if (!amount || amount <= 0) {
                 status.innerText = "Please enter a valid amount.";
                 dogMessage.innerText = getRandomMessage('transferNoAmount');
+                console.log("Invalid amount, exiting.");
+                swapButton.disabled = false;
                 return;
             }
+
             let receiver = document.getElementById('receiverAddress').value.trim();
             if (!receiver) receiver = account;
             if (!web3.utils.isAddress(receiver)) {
                 status.innerText = "Invalid receiver address.";
                 dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
+                console.log("Invalid receiver address, exiting.");
+                swapButton.disabled = false;
                 return;
             }
+
             const amountWei = web3.utils.toWei(amount, 'ether');
             if (web3.utils.toBN(amountWei).gt(web3.utils.toBN(fromBalance))) {
                 status.innerText = "Insufficient token balance.";
                 dogMessage.innerText = "Woof! Not enough LUISA to bridge, pup!";
+                console.log("Insufficient balance, exiting.");
+                swapButton.disabled = false;
                 return;
             }
+
             try {
                 swapButton.disabled = true;
+                console.log("Checking rate limits...");
                 if (!(await checkRateLimits())) {
                     swapButton.disabled = false;
+                    console.log("Rate limit check failed, exiting.");
                     return;
                 }
+
+                console.log("Checking chain support...");
                 if (!(await checkChainSupport())) {
                     swapButton.disabled = false;
+                    console.log("Chain support check failed, exiting.");
                     return;
                 }
+
+                console.log("Checking allowlist...");
                 if (!(await checkAllowList())) {
                     swapButton.disabled = false;
+                    console.log("Allowlist check failed, exiting.");
                     return;
                 }
+
+                console.log("Checking token support...");
                 if (!(await checkTokenSupport())) {
                     swapButton.disabled = false;
+                    console.log("Token support check failed, exiting.");
                     return;
                 }
+
                 status.innerText = "Processing transfer...";
                 dogMessage.innerText = getRandomMessage('transferStart');
+                console.log("Approving token...");
                 await approveToken(chains[fromChain].tokenAddress, amountWei);
+
+                console.log("Preparing lockOrBurn parameters...");
                 const lockOrBurnIn = {
                     receiver: web3.utils.hexToBytes(receiver),
                     remoteChainSelector: chains[toChain].chainSelector,
@@ -678,17 +742,24 @@
                     amount: amountWei,
                     localToken: chains[fromChain].tokenAddress
                 };
+
+                console.log("Calling lockOrBurn...");
                 const tx = await currentPoolContract.methods.lockOrBurn(lockOrBurnIn).send({ 
                     from: account,
                     gas: web3.utils.toHex(500000)
                 });
+
                 status.innerText = `${fromChain === 'Shibarium' ? 'Locked' : 'Burned'} successfully! Switching chains...`;
                 dogMessage.innerText = getRandomMessage('transferSuccess');
+                console.log("Switching chains...");
                 await switchChain(toChain);
                 await initializeContracts();
+
                 status.innerText = `Switched to ${toChain}. Complete the transfer.`;
                 swapButton.textContent = "Complete Transfer";
                 swapButton.onclick = () => completeCrossChainTransfer(amountWei, receiver);
+                swapButton.disabled = false;
+                console.log("Transfer initiated, waiting for completion...");
                 listenForEvents(tx, fromChain);
             } catch (error) {
                 console.error("Transfer failed:", error);
@@ -714,6 +785,7 @@
                 }
                 status.innerText = errorMessage;
                 swapButton.disabled = false;
+                console.log("Error occurred, button re-enabled.");
             }
         }
 
