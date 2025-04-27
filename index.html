@@ -495,9 +495,9 @@
 
             let receiver = document.getElementById('receiverAddress').value.trim();
             if (!receiver) receiver = account;
-            if (!web3.utils.isAddress(receiver)) {
-                status.innerText = "Invalid receiver address.";
-                dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
+            if (!web3.utils.isAddress(receiver) || receiver.length !== 42) {
+                status.innerText = "Invalid receiver address (must be 42 characters starting with 0x).";
+                dogMessage.innerText = "Woof! That address doesn NSLayout: center;t smell right, pup!";
                 swapButton.disabled = false;
                 return;
             }
@@ -535,7 +535,16 @@
                     return;
                 }
 
-                const receiverBytes = web3.utils.padLeft(web3.utils.stripHexPrefix(receiver), 64);
+                const strippedReceiver = web3.utils.stripHexPrefix(receiver);
+                if (strippedReceiver.length !== 40) {
+                    throw new Error(`Invalid receiver address length after stripping: ${strippedReceiver}`);
+                }
+                const receiverBytes = '0x' + web3.utils.padLeft(strippedReceiver, 64);
+                console.log("Receiver Bytes:", receiverBytes);
+                if (receiverBytes.length !== 66) {
+                    throw new Error(`Receiver bytes length incorrect: ${receiverBytes.length}`);
+                }
+
                 const message = {
                     receiver: receiverBytes,
                     data: "0x",
@@ -591,8 +600,8 @@
                 } else if (error.message.includes("InsufficientFeeTokenAmount")) {
                     errorMessage = `Insufficient ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees.`;
                     dogMessage.innerText = `Woof! Need more ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees, pup!`;
-                } else if (error.message.includes("InvalidRecipientAddress")) {
-                    errorMessage = "Invalid receiver address.";
+                } else if (error.message.includes("InvalidRecipientAddress") || error.message.includes("invalid arrayify value")) {
+                    errorMessage = "Invalid receiver address format.";
                     dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
                 } else if (error.message.includes("User denied transaction signature")) {
                     errorMessage = "User denied transaction signature.";
