@@ -311,41 +311,13 @@
         let web3, account, currentPoolContract, currentTokenContract, currentRouterContract, fromChain = 'Shibarium', toChain = 'Base', fromBalance = '0', toBalance = '0';
 
         const dogMessages = {
-            connectSuccess: [
-                "Woof! Wallet connected, ready to bridge, pup!",
-                "Arf! You're in, let's get bridging!",
-                "Bark! Wallet's ready, time to cross chains!"
-            ],
-            connectFail: [
-                "Woof! Couldn't connect wallet, try again, pup!",
-                "Arf! Wallet connection failed, give it another go!",
-                "Bark! Something went wrong, check your wallet!"
-            ],
-            transferStart: [
-                "Woof! Bridging your LUISA, hold tight, pup!",
-                "Arf! Sending your tokens across the chain!",
-                "Bark! Cross-chain transfer in progress!"
-            ],
-            transferSuccess: [
-                "Woof! Transfer initiated, your LUISA is on its way!",
-                "Arf! Bridge complete, check the destination chain!",
-                "Bark! Success! Your tokens are crossing chains!"
-            ],
-            transferFail: [
-                "Woof! Transfer failed, check the details, pup!",
-                "Arf! Something went wrong, try again!",
-                "Bark! Bridge hit a snag, review and retry!"
-            ],
-            transferNoAmount: [
-                "Woof! Enter an amount to bridge, pup!",
-                "Arf! Can't bridge nothing, pick an amount!",
-                "Bark! Need an amount to cross the chain!"
-            ],
-            userDenied: [
-                "Woof! You canceled the transaction, pup!",
-                "Arf! Transaction denied, try again when ready!",
-                "Bark! You said no, let's try that again!"
-            ]
+            connectSuccess: ["Woof! Wallet connected, ready to bridge, pup!", "Arf! You're in, let's get bridging!", "Bark! Wallet's ready, time to cross chains!"],
+            connectFail: ["Woof! Couldn't connect wallet, try again, pup!", "Arf! Wallet connection failed, give it another go!", "Bark! Something went wrong, check your wallet!"],
+            transferStart: ["Woof! Bridging your LUISA, hold tight, pup!", "Arf! Sending your tokens across the chain!", "Bark! Cross-chain transfer in progress!"],
+            transferSuccess: ["Woof! Transfer initiated, your LUISA is on its way!", "Arf! Bridge complete, check the destination chain!", "Bark! Success! Your tokens are crossing chains!"],
+            transferFail: ["Woof! Transfer failed, check the details, pup!", "Arf! Something went wrong, try again!", "Bark! Bridge hit a snag, review and retry!"],
+            transferNoAmount: ["Woof! Enter an amount to bridge, pup!", "Arf! Can't bridge nothing, pick an amount!", "Bark! Need an amount to cross the chain!"],
+            userDenied: ["Woof! You canceled the transaction, pup!", "Arf! Transaction denied, try again when ready!", "Bark! You said no, let's try that again!"]
         };
 
         function getRandomMessage(type) {
@@ -460,13 +432,10 @@
 
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
-            const allowance = await tokenContract.methods.allowance(account, chains[fromChain].poolAddress).call();
-            console.log(`Current allowance: ${allowance}, Required: ${amount}`);
+            const allowance = await tokenContract.methods.allowance(account, chains[fromChain].routerAddress).call();
             if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
-                console.log("Approving token...");
-                await tokenContract.methods.approve(chains[fromChain].poolAddress, amount).send({ from: account, gas: web3.utils.toHex(100000) });
-                const newAllowance = await tokenContract.methods.allowance(account, chains[fromChain].poolAddress).call();
-                console.log(`New allowance: ${newAllowance}`);
+                await tokenContract.methods.approve(chains[fromChain].routerAddress, amount).send({ from: account, gas: web3.utils.toHex(100000) });
+                const newAllowance = await tokenContract.methods.allowance(account, chains[fromChain].routerAddress).call();
                 if (web3.utils.toBN(newAllowance).lt(web3.utils.toBN(amount))) {
                     throw new Error("Token approval failed: insufficient allowance");
                 }
@@ -497,7 +466,7 @@
             if (!receiver) receiver = account;
             if (!web3.utils.isAddress(receiver) || receiver.length !== 42) {
                 status.innerText = "Invalid receiver address (must be 42 characters starting with 0x).";
-                dogMessage.innerText = "Woof! That address doesn NSLayout: center;t smell right, pup!";
+                dogMessage.innerText = "Woof! That address doesn't smell right, pup!";
                 swapButton.disabled = false;
                 return;
             }
@@ -526,8 +495,15 @@
                     return;
                 }
 
+                const supportedTokens = await currentRouterContract.methods.getSupportedTokens(destinationChainSelector).call();
+                if (!supportedTokens.includes(chains[fromChain].tokenAddress)) {
+                    status.innerText = `Token ${chains[fromChain].tokenAddress} not supported on target chain.`;
+                    dogMessage.innerText = "Woof! This token can't be bridged, pup!";
+                    swapButton.disabled = false;
+                    return;
+                }
+
                 const rateLimitState = await currentPoolContract.methods.getCurrentOutboundRateLimiterState(destinationChainSelector).call();
-                console.log("Rate Limit State:", rateLimitState);
                 if (rateLimitState.isEnabled && web3.utils.toBN(rateLimitState.tokens).lt(web3.utils.toBN(amountWei))) {
                     status.innerText = "Rate limit reached, please wait.";
                     dogMessage.innerText = "Woof! Too many transfers, wait a bit, pup!";
@@ -536,11 +512,7 @@
                 }
 
                 const strippedReceiver = web3.utils.stripHexPrefix(receiver);
-                if (strippedReceiver.length !== 40) {
-                    throw new Error(`Invalid receiver address length after stripping: ${strippedReceiver}`);
-                }
                 const receiverBytes = '0x' + web3.utils.padLeft(strippedReceiver, 64);
-                console.log("Receiver Bytes:", receiverBytes);
                 if (receiverBytes.length !== 66) {
                     throw new Error(`Receiver bytes length incorrect: ${receiverBytes.length}`);
                 }
@@ -560,14 +532,10 @@
 
                 const fee = await currentRouterContract.methods.getFee(destinationChainSelector, message).call();
                 const feeInEther = web3.utils.fromWei(fee, 'ether');
-                console.log("Message:", message);
-                console.log("Fee:", feeInEther);
-                console.log("Destination Chain Selector:", destinationChainSelector);
                 status.innerText = `Estimated fee: ${feeInEther} ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'}`;
 
                 const nativeBalance = await web3.eth.getBalance(account);
                 const nativeBalanceInEther = web3.utils.fromWei(nativeBalance, 'ether');
-                console.log(`Account balance: ${nativeBalanceInEther} ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'}, Required fee: ${feeInEther}`);
                 if (web3.utils.toBN(nativeBalance).lt(web3.utils.toBN(fee))) {
                     status.innerText = `Insufficient ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees.`;
                     dogMessage.innerText = `Woof! Need more ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees, pup!`;
@@ -577,11 +545,11 @@
 
                 await approveToken(chains[fromChain].tokenAddress, amountWei);
 
-                const feeWithBuffer = web3.utils.toBN(fee).mul(web3.utils.toBN(110)).div(web3.utils.toBN(100));
+                const feeWithBuffer = web3.utils.toBN(fee).mul(web3.utils.toBN(120)).div(web3.utils.toBN(100));
                 const tx = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).send({
                     from: account,
                     value: feeWithBuffer,
-                    gas: web3.utils.toHex(1500000)
+                    gas: web3.utils.toHex(2000000)
                 });
 
                 const messageId = tx.events.MessageExecuted ? tx.events.MessageExecuted.returnValues.messageId : 'Unknown';
@@ -602,7 +570,7 @@
                     dogMessage.innerText = `Woof! Need more ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees, pup!`;
                 } else if (error.message.includes("InvalidRecipientAddress") || error.message.includes("invalid arrayify value")) {
                     errorMessage = "Invalid receiver address format.";
-                    dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
+                    dogMessage.innerText = "Woof! That address doesn't smell right, pup!";
                 } else if (error.message.includes("User denied transaction signature")) {
                     errorMessage = "User denied transaction signature.";
                     dogMessage.innerText = getRandomMessage('userDenied');
@@ -611,12 +579,12 @@
                     dogMessage.innerText = "Woof! Something broke in the bridge, pup!";
                 } else if (error.message.includes("Token approval failed")) {
                     errorMessage = "Token approval failed.";
-                    dogMessage.innerText = "Woof! Token approval didn’t go through, pup!";
+                    dogMessage.innerText = "Woof! Token approval didn't go through, pup!";
                 } else {
                     errorMessage = `Transaction failed: ${error.message}`;
                     dogMessage.innerText = getRandomMessage('transferFail');
                 }
-                console.error("Transaction error:", error);
+                console.error("Transaction error:", error.message, error.data);
                 status.innerText = errorMessage;
                 swapButton.disabled = false;
             }
