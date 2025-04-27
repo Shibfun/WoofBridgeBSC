@@ -433,28 +433,44 @@
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const allowance = await tokenContract.methods.allowance(account, chains[fromChain].routerAddress).call();
-            console.log(`Allowance: ${allowance}, Required: ${amount}`);
+            console.log(`Current allowance for ${chains[fromChain].routerAddress}: ${allowance}, Required: ${amount}`);
             if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
                 console.log("Approving token...");
-                const approveTx = await tokenContract.methods.approve(chains[fromChain].routerAddress, amount).send({ from: account });
-                console.log("Approval transaction:", approveTx.transactionHash);
+                const approveTx = await tokenContract.methods.approve(chains[fromChain].routerAddress, amount).send({
+                    from: account,
+                    gas: web3.utils.toHex(100000)
+                });
+                console.log("Approval transaction hash:", approveTx.transactionHash);
                 const newAllowance = await tokenContract.methods.allowance(account, chains[fromChain].routerAddress).call();
                 console.log(`New allowance: ${newAllowance}`);
                 if (web3.utils.toBN(newAllowance).lt(web3.utils.toBN(amount))) {
-                    throw new Error("Token approval failed: insufficient allowance");
+                    throw new Error("Token approval failed: insufficient allowance after approval");
                 }
+            } else {
+                console.log("Sufficient allowance, no approval needed.");
             }
         }
 
         async function decodeRevertReason(error) {
+            if (!error) return "No error provided";
             if (error.data) {
                 const errorData = error.data;
-                if (typeof errorData === 'string' && errorData.startsWith('0x')) {
-                    const reason = web3.eth.abi.decodeParameter('string', errorData.slice(10));
-                    return reason;
+                if (typeof errorData === 'string') {
+                    if (errorData.startsWith('0x08c379a0')) {
+                        const reason = web3.eth.abi.decodeParameter('string', errorData.slice(10));
+                        return reason;
+                    } else if (errorData.startsWith('0x')) {
+                        return `Raw error data: ${errorData}`;
+                    }
                 } else if (errorData.message) {
                     return errorData.message;
+                } else if (typeof errorData === 'object') {
+                    return JSON.stringify(errorData);
                 }
+            }
+            if (error.message) {
+                const revertMatch = error.message.match(/revert (.*?)(?=\n|$)/);
+                if (revertMatch) return revertMatch[1];
             }
             return "Unknown revert reason";
         }
@@ -491,7 +507,7 @@
             const amountWei = web3.utils.toWei(amount.toString(), 'ether');
             const balanceRaw = await currentTokenContract.methods.balanceOf(account).call();
             const balanceWei = web3.utils.toBN(balanceRaw);
-            console.log(`Token balance: ${balanceWei}, Amount: ${amountWei}`);
+            console.log(`Token balance: ${balanceWei.toString()}, Amount to transfer: ${amountWei}`);
             if (balanceWei.lt(web3.utils.toBN(amountWei))) {
                 status.innerText = "Insufficient token balance.";
                 dogMessage.innerText = "Woof! Not enough LUISA to bridge, pup!";
@@ -505,6 +521,8 @@
                 dogMessage.innerText = getRandomMessage('transferStart');
 
                 const destinationChainSelector = chains[toChain].chainSelector;
+                console.log(`Destination chain selector: ${destinationChainSelector}`);
+
                 const isChainSupportedRouter = await currentRouterContract.methods.isChainSupported(destinationChainSelector).call();
                 console.log(`Router supports destination chain: ${isChainSupportedRouter}`);
                 if (!isChainSupportedRouter) {
@@ -541,11 +559,29 @@
                     return;
                 }
 
+                const supportedChainsPool = await currentPoolContract.methods.getSupportedChains().call();
+                console.log(`Supported chains by Pool: ${supportedChainsPool}`);
+                if (!supportedChainsPool.includes(destinationChainSelector)) {
+                    status.innerText = `Target chain ${toChain} not in Pool's supported chains.`;
+                    dogMessage.innerText = `Woof! Can't bridge to ${toChain}, pup!`;
+                    swapButton.disabled = false;
+                    return;
+                }
+
                 const rateLimitState = await currentPoolContract.methods.getCurrentOutboundRateLimiterState(destinationChainSelector).call();
                 console.log("Rate limit state:", rateLimitState);
                 if (rateLimitState.isEnabled && web3.utils.toBN(rateLimitState.tokens).lt(web3.utils.toBN(amountWei))) {
                     status.innerText = "Rate limit reached, please wait.";
                     dogMessage.innerText = "Woof! Too many transfers, wait a bit, pup!";
+                    swapButton.disabled = false;
+                    return;
+                }
+
+                const remotePools = await currentPoolContract.methods.getRemotePools(destinationChainSelector).call();
+                console.log(`Remote pools for destination chain: ${remotePools}`);
+                if (!remotePools || remotePools.length === 0) {
+                    status.innerText = `No remote pools configured for ${toChain}.`;
+                    dogMessage.innerText = `Woof! Can't bridge to ${toChain}, pup!`;
                     swapButton.disabled = false;
                     return;
                 }
@@ -588,16 +624,23 @@
 
                 await approveToken(chains[fromChain].tokenAddress, amountWei);
 
-                const feeWithBuffer = web3.utils.toBN(fee).mul(web3.utils.toBN(130)).div(web3.utils.toBN(100));
+                const feeWithBuffer = web3.utils.toBN(fee).mul(web3.utils.toBN(150)).div(web3.utils.toBN(100));
                 console.log(`Fee with buffer: ${web3.utils.fromWei(feeWithBuffer, 'ether')} ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'}`);
 
-                const estimatedGas = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).estimateGas({
-                    from: account,
-                    value: feeWithBuffer
-                });
-                console.log(`Estimated gas: ${estimatedGas}`);
-                const gasLimit = Math.floor(estimatedGas * 1.2);
-                console.log(`Gas limit with buffer: ${gasLimit}`);
+                let gasLimit;
+                try {
+                    const estimatedGas = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).estimateGas({
+                        from: account,
+                        value: feeWithBuffer
+                    });
+                    console.log(`Estimated gas: ${estimatedGas}`);
+                    gasLimit = Math.floor(estimatedGas * 1.5);
+                    console.log(`Gas limit with buffer: ${gasLimit}`);
+                } catch (gasError) {
+                    console.error("Gas estimation failed:", gasError);
+                    gasLimit = 3000000;
+                    console.log(`Falling back to default gas limit: ${gasLimit}`);
+                }
 
                 const tx = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).send({
                     from: account,
@@ -619,7 +662,7 @@
                     errorMessage = "Rate limit reached, please wait.";
                     dogMessage.innerText = "Woof! Too many transfers, wait a bit, pup!";
                 } else if (error.message.includes("UnsupportedDestinationChain")) {
-                    errorMessage = "Target chain not supported.";
+                    errorMessage = "Target chain not supported by Router.";
                     dogMessage.innerText = `Woof! Can't bridge to ${toChain}, pup!`;
                 } else if (error.message.includes("InsufficientFeeTokenAmount")) {
                     errorMessage = `Insufficient ${fromChain === 'Shibarium' ? 'BONE' : 'ETH'} for fees.`;
@@ -630,7 +673,7 @@
                 } else if (error.message.includes("User denied transaction signature")) {
                     errorMessage = "User denied transaction signature.";
                     dogMessage.innerText = getRandomMessage('userDenied');
-                } else if (error.message.includes("revert")) {
+                } else if (error.message.includes("revert") || revertReason !== "Unknown revert reason") {
                     errorMessage = `Transaction reverted: ${revertReason}`;
                     dogMessage.innerText = "Woof! Something broke in the bridge, pup!";
                 } else if (error.message.includes("Token approval failed")) {
@@ -640,7 +683,8 @@
                     errorMessage = `Transaction failed: ${error.message} (Revert reason: ${revertReason})`;
                     dogMessage.innerText = getRandomMessage('transferFail');
                 }
-                console.error("Transaction error:", error.message, error.data);
+                console.error("Transaction error:", error);
+                console.error("Error details:", JSON.stringify(error, null, 2));
                 status.innerText = errorMessage;
                 swapButton.disabled = false;
             }
