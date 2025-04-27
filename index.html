@@ -392,7 +392,7 @@
                             chainId: `0x${chainConfig.chainId.toString(16)}`,
                             chainName: chainConfig.chainName,
                             rpcUrls: [chainConfig.rpcUrl],
-                            nativeCurrency: { name: accountConfig.chainName, symbol: chain === 'Shibarium' ? 'BONE' : 'ETH', decimals: 18 },
+                            nativeCurrency: { name: chainConfig.chainName, symbol: chain === 'Shibarium' ? 'BONE' : 'ETH', decimals: 18 },
                             blockExplorerUrls: [chain === 'Shibarium' ? 'https://shibariumscan.io' : 'https://basescan.org']
                         }]
                     });
@@ -458,38 +458,55 @@
             document.getElementById('fromAmount').value = amount.toFixed(4);
         }
 
+        async function waitForTransaction(txHash) {
+            let receipt = null;
+            const maxAttempts = 30;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                receipt = await web3.eth.getTransactionReceipt(txHash);
+                if (receipt) {
+                    if (receipt.status) {
+                        console.log(`Transaction ${txHash} confirmed`);
+                        return receipt;
+                    } else {
+                        throw new Error(`Transaction ${txHash} failed`);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            throw new Error(`Transaction ${txHash} not confirmed after ${maxAttempts} attempts`);
+        }
+
+        async function waitForAllowance(tokenContract, owner, spender, requiredAmount) {
+            const maxAttempts = 10;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                const allowance = await tokenContract.methods.allowance(owner, spender).call();
+                if (web3.utils.toBN(allowance).gte(web3.utils.toBN(requiredAmount))) {
+                    console.log(`Allowance confirmed: ${web3.utils.fromWei(allowance, 'ether')} LUISA`);
+                    return;
+                }
+                console.log(`Allowance not yet updated: ${web3.utils.fromWei(allowance, 'ether')} LUISA, required: ${web3.utils.fromWei(requiredAmount, 'ether')} LUISA`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            throw new Error("Allowance not updated after timeout");
+        }
+
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const poolAddress = chains[fromChain].poolAddress;
-            try {
-                // Check current allowance
-                const allowance = await tokenContract.methods.allowance(account, poolAddress).call();
-                console.log(`Current allowance: ${web3.utils.fromWei(allowance, 'ether')} LUISA, Required: ${web3.utils.fromWei(amount, 'ether')} LUISA`);
-
-                // If allowance is less than the required amount, approve the pool contract
-                if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
-                    console.log(`Approving ${web3.utils.fromWei(amount, 'ether')} LUISA for pool contract ${poolAddress}...`);
-                    // Reset allowance to 0 first to avoid issues with some ERC20 contracts
-                    if (web3.utils.toBN(allowance).gt(web3.utils.toBN(0))) {
-                        console.log("Resetting allowance to 0...");
-                        await tokenContract.methods.approve(poolAddress, 0).send({ from: account, gas: web3.utils.toHex(100000) });
-                    }
-                    // Approve the required amount
-                    const approveTx = await tokenContract.methods.approve(poolAddress, amount).send({ from: account, gas: web3.utils.toHex(100000) });
-                    console.log(`Approval transaction hash: ${approveTx.transactionHash}`);
-
-                    // Verify the new allowance
-                    const newAllowance = await tokenContract.methods.allowance(account, poolAddress).call();
-                    console.log(`New allowance: ${web3.utils.fromWei(newAllowance, 'ether')} LUISA`);
-                    if (web3.utils.toBN(newAllowance).lt(web3.utils.toBN(amount))) {
-                        throw new Error("Token approval failed: insufficient allowance after approval");
-                    }
-                } else {
-                    console.log("Sufficient allowance already exists.");
-                }
-            } catch (error) {
-                console.error("Token approval error:", error);
-                throw new Error(`Token approval failed: ${error.message}`);
+            const allowance = await tokenContract.methods.allowance(account, poolAddress).call();
+            console.log(`Current allowance: ${web3.utils.fromWei(allowance, 'ether')} LUISA, Required: ${web3.utils.fromWei(amount, 'ether')} LUISA`);
+            if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
+                console.log(`Approving ${web3.utils.fromWei(amount, 'ether')} LUISA for pool contract ${poolAddress}`);
+                const approveTx = await tokenContract.methods.approve(poolAddress, amount).send({ from: account, gas: web3.utils.toHex(100000) });
+                console.log(`Approval transaction hash: ${approveTx.transactionHash}`);
+                await waitForTransaction(approveTx.transactionHash);
+                await waitForAllowance(tokenContract, account, poolAddress, amount);
+            } else {
+                console.log("Sufficient allowance already exists");
             }
         }
 
