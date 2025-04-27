@@ -93,6 +93,16 @@
             height: 24px;
             margin-right: 10px;
         }
+        select {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        select:focus { outline: none; }
         input {
             width: 100%;
             padding: 10px;
@@ -201,9 +211,14 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="LUISA">
-                    <span>LUISA</span>
+                    <img id="fromTokenLogo" src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="Token">
+                    <span id="fromTokenName">LUISA</span>
                 </div>
+                <select id="tokenSelector" onchange="updateTokenSelection()">
+                    <option value="LUISA">LUISA</option>
+                    <option value="USAGI">USAGI</option>
+                    <option value="NEKO">NEKO</option>
+                </select>
             </div>
             <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
             <div class="percentage-buttons">
@@ -222,8 +237,8 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="LUISA">
-                    <span>LUISA</span>
+                    <img id="toTokenLogo" src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="Token">
+                    <span id="toTokenName">LUISA</span>
                 </div>
             </div>
             <input type="text" id="receiverAddress" placeholder="Receiver Address (defaults to your address)">
@@ -237,25 +252,61 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
+        const tokens = {
+            LUISA: {
+                logo: 'https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png',
+                Shibarium: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
+                    tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9'
+                },
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
+                    tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46'
+                }
+            },
+            USAGI: {
+                logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/Usagi.png',
+                Shibarium: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xc488be11a33c20bd21f7940d4a5937e8a8c81fec',
+                    tokenAddress: '0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79'
+                },
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
+                    tokenAddress: '0x760295aa772671f21cd0046d094938d09f2b380d'
+                }
+            },
+            NEKO: {
+                logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/neko.png',
+                Shibarium: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xdce9cf770345584f2dfaa2ea23625cf3edd6b7cf',
+                    tokenAddress: '0x63a67329f761517570345ee86f791f74f9dc5461'
+                },
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
+                    tokenAddress: '0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8'
+                }
+            }
+        };
+
         const chains = {
             Shibarium: {
                 chainId: 109,
                 chainName: 'Shibarium',
                 rpcUrl: 'https://rpc.shibariumchain.com',
-                poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
-                tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
                 chainSelector: '3993510008929295315',
-                mechanism: 'Lock & Release',
                 routerAddress: '0xc2CA5d5C17911e4B838194b51585DdF8fe5116C1'
             },
             Base: {
                 chainId: 8453,
                 chainName: 'Base',
                 rpcUrl: 'https://mainnet.base.org',
-                poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
-                tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46',
                 chainSelector: '15971525489660198786',
-                mechanism: 'Burn & Mint',
                 routerAddress: '0x881e3A65B4d4a04dD529061dd0071cf975F58bCD'
             }
         };
@@ -271,6 +322,7 @@
         let web3, account, currentRouterContract, currentTokenContract, fromBalance = '0';
         const fromChain = 'Shibarium';
         const toChain = 'Base';
+        let selectedToken = 'LUISA';
 
         const dogMessages = {
             connectSuccess: [
@@ -284,12 +336,12 @@
                 "Bark! Something went wrong, check your wallet!"
             ],
             transferStart: [
-                "Woof! Bridging your LUISA, hold tight, pup!",
+                "Woof! Bridging your tokens, hold tight, pup!",
                 "Arf! Sending your tokens across the chain!",
                 "Bark! Cross-chain transfer in progress!"
             ],
             transferSuccess: [
-                "Woof! Transfer initiated, your LUISA is on its way!",
+                "Woof! Transfer initiated, your tokens are on their way!",
                 "Arf! Bridge complete, check the destination chain!",
                 "Bark! Success! Your tokens are crossing chains!"
             ],
@@ -313,6 +365,17 @@
         function getRandomMessage(type) {
             const messages = dogMessages[type];
             return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function updateTokenSelection() {
+            selectedToken = document.getElementById('tokenSelector').value;
+            const tokenConfig = tokens[selectedToken];
+            document.getElementById('fromTokenLogo').src = tokenConfig.logo;
+            document.getElementById('fromTokenName').innerText = selectedToken;
+            document.getElementById('toTokenLogo').src = tokenConfig.logo;
+            document.getElementById('toTokenName').innerText = selectedToken;
+            initializeContracts();
+            updateBalances();
         }
 
         async function initializeWeb3() {
@@ -367,15 +430,16 @@
 
         async function initializeContracts() {
             const chainConfig = chains[fromChain];
+            const tokenConfig = tokens[selectedToken][fromChain];
             currentRouterContract = new web3.eth.Contract(routerAbi, chainConfig.routerAddress);
-            currentTokenContract = new web3.eth.Contract(erc20Abi, chainConfig.tokenAddress);
+            currentTokenContract = new web3.eth.Contract(erc20Abi, tokenConfig.tokenAddress);
         }
 
         async function updateBalances() {
             if (!web3 || !account) return;
             try {
-                const fromChainConfig = chains[fromChain];
-                const fromTokenContract = new web3.eth.Contract(erc20Abi, fromChainConfig.tokenAddress);
+                const tokenConfig = tokens[selectedToken][fromChain];
+                const fromTokenContract = new web3.eth.Contract(erc20Abi, tokenConfig.tokenAddress);
                 const fromBalanceRaw = await fromTokenContract.methods.balanceOf(account).call();
                 fromBalance = web3.utils.fromWei(fromBalanceRaw, 'ether');
                 document.getElementById('fromBalance').innerText = `Balance: ${parseFloat(fromBalance).toFixed(4)}`;
@@ -417,10 +481,10 @@
             while (attempts < maxAttempts) {
                 const allowance = await tokenContract.methods.allowance(owner, spender).call();
                 if (web3.utils.toBN(allowance).gte(web3.utils.toBN(requiredAmount))) {
-                    console.log(`Allowance confirmed: ${web3.utils.fromWei(allowance, 'ether')} LUISA`);
+                    console.log(`Allowance confirmed: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}`);
                     return;
                 }
-                console.log(`Allowance not yet updated: ${web3.utils.fromWei(allowance, 'ether')} LUISA, required: ${web3.utils.fromWei(requiredAmount, 'ether')} LUISA`);
+                console.log(`Allowance not yet updated: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}, required: ${web3.utils.fromWei(requiredAmount, 'ether')} ${selectedToken}`);
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 attempts++;
             }
@@ -431,9 +495,9 @@
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const routerAddress = chains[fromChain].routerAddress;
             const allowance = await tokenContract.methods.allowance(account, routerAddress).call();
-            console.log(`Current allowance for Router ${routerAddress}: ${web3.utils.fromWei(allowance, 'ether')} LUISA, Required: ${web3.utils.fromWei(amount, 'ether')} LUISA`);
+            console.log(`Current allowance for Router ${routerAddress}: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}, Required: ${web3.utils.fromWei(amount, 'ether')} ${selectedToken}`);
             if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
-                console.log(`Approving unlimited LUISA for Router contract ${routerAddress}`);
+                console.log(`Approving unlimited ${selectedToken} for Router contract ${routerAddress}`);
                 const maxUint256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
                 const approveTx = await tokenContract.methods.approve(routerAddress, maxUint256).send({ from: account, gas: web3.utils.toHex(100000) });
                 console.log(`Approval transaction hash: ${approveTx.transactionHash}`);
@@ -478,7 +542,7 @@
             const balanceWei = web3.utils.toBN(balanceRaw);
             if (balanceWei.lt(web3.utils.toBN(amountWei))) {
                 status.innerText = "Insufficient token balance.";
-                dogMessage.innerText = "Woof! Not enough LUISA to bridge, pup!";
+                dogMessage.innerText = `Woof! Not enough ${selectedToken} to bridge, pup!`;
                 swapButton.disabled = false;
                 return;
             }
@@ -506,15 +570,15 @@
                     return;
                 }
 
-                status.innerText = "Approving tokens...";
-                await approveToken(chains[fromChain].tokenAddress, amountWei);
+                status.innerText = `Approving ${selectedToken}...`;
+                await approveToken(tokens[selectedToken][fromChain].tokenAddress, amountWei);
 
                 status.innerText = "Estimating fees...";
                 const message = {
                     receiver: web3.utils.padLeft(receiver, 64),
                     data: '0x',
                     tokenAmounts: [{
-                        token: chains[fromChain].tokenAddress,
+                        token: tokens[selectedToken][fromChain].tokenAddress,
                         amount: amountWei
                     }],
                     feeToken: '0x0000000000000000000000000000000000000000',
