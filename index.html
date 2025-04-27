@@ -279,10 +279,10 @@
             Shibarium: {
                 chainId: 109,
                 chainName: 'Shibarium',
-                rpcUrl: 'https://rpc.shibrpc.com',
+                rpcUrl: 'https://shibarium-rpc.com',
                 poolAddress: '0xca8facd0eb11deb6114d515d136c79c6f4170e87',
                 tokenAddress: '0x0ccd687cc6f8461170336d8e8cf46a39313deab9',
-                chainSelector: '4051577827741608506', // Shibarium chain selector
+                chainSelector: '4051577827741608506',
                 mechanism: 'Lock & Release'
             },
             Base: {
@@ -291,7 +291,7 @@
                 rpcUrl: 'https://mainnet.base.org',
                 poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
                 tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46',
-                chainSelector: '15971525489660198786', // Base chain selector
+                chainSelector: '15971525489660198786',
                 mechanism: 'Burn & Mint'
             }
         };
@@ -317,7 +317,7 @@
             chainId: 109,
             chainName: 'Shibarium',
             nativeCurrency: { name: 'BONE', symbol: 'BONE', decimals: 18 },
-            rpcUrls: ['https://rpc.shibrpc.com'],
+            rpcUrls: ['https://shibarium-rpc.com'],
             blockExplorerUrls: ['https://shibariumscan.io']
         };
 
@@ -528,6 +528,45 @@
             dogMessage.innerText = getRandomMessage('setPercentage', percentage);
         }
 
+        async function checkRateLimits() {
+            const status = document.getElementById('networkStatus');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                const rateLimiterState = await currentPoolContract.methods.getCurrentOutboundRateLimiterState(chains[toChain].chainSelector).call();
+                const { isEnabled, capacity, rate, tokens } = rateLimiterState;
+                if (isEnabled && tokens >= capacity) {
+                    status.innerText = "Rate limit reached. Please wait.";
+                    dogMessage.innerText = "Woof! Too many transfers, pup! Wait a bit!";
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error("Rate limit check failed:", error);
+                status.innerText = "Error checking rate limits.";
+                dogMessage.innerText = "Woof! Can’t sniff out the limits, pup!";
+                return false;
+            }
+        }
+
+        async function checkChainSupport() {
+            const status = document.getElementById('networkStatus');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                const isSupported = await currentPoolContract.methods.isSupportedChain(chains[toChain].chainSelector).call();
+                if (!isSupported) {
+                    status.innerText = `Target chain ${toChain} is not supported.`;
+                    dogMessage.innerText = `Woof! Can’t bridge to ${toChain}, pup!`;
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error("Chain support check failed:", error);
+                status.innerText = "Error checking chain support.";
+                dogMessage.innerText = "Woof! Can’t confirm the chain, pup!";
+                return false;
+            }
+        }
+
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const allowance = await tokenContract.methods.allowance(account, chains[fromChain].poolAddress).call();
@@ -575,17 +614,28 @@
             }
             try {
                 swapButton.disabled = true;
+                if (!(await checkRateLimits())) {
+                    swapButton.disabled = false;
+                    return;
+                }
+                if (!(await checkChainSupport())) {
+                    swapButton.disabled = false;
+                    return;
+                }
                 status.innerText = "Processing transfer...";
                 dogMessage.innerText = getRandomMessage('transferStart');
                 await approveToken(chains[fromChain].tokenAddress, amountWei);
                 const lockOrBurnIn = {
-                    receiver: web3.utils.utf8ToHex(receiver),
+                    receiver: receiver,
                     remoteChainSelector: chains[toChain].chainSelector,
                     originalSender: account,
                     amount: amountWei,
                     localToken: chains[fromChain].tokenAddress
                 };
-                const tx = await currentPoolContract.methods.lockOrBurn(lockOrBurnIn).send({ from: account });
+                const tx = await currentPoolContract.methods.lockOrBurn(lockOrBurnIn).send({ 
+                    from: account,
+                    gas: web3.utils.toHex(500000)
+                });
                 status.innerText = `${fromChain === 'Shibarium' ? 'Locked' : 'Burned'} successfully! Switching chains...`;
                 dogMessage.innerText = getRandomMessage('transferSuccess');
                 await switchChain(toChain);
@@ -600,6 +650,12 @@
                 if (error.message.includes("User denied transaction signature")) {
                     errorMessage = "User denied transaction signature.";
                     dogMessage.innerText = getRandomMessage('userDenied');
+                } else if (error.message.includes("TokenRateLimitReached") || error.message.includes("AggregateValueRateLimitReached")) {
+                    errorMessage = "Rate limit reached. Please wait.";
+                    dogMessage.innerText = "Woof! Too many transfers, pup! Wait a bit!";
+                } else if (error.message.includes("ChainNotAllowed")) {
+                    errorMessage = "Target chain not supported.";
+                    dogMessage.innerText = `Woof! Can’t bridge to ${toChain}, pup!`;
                 } else {
                     dogMessage.innerText = getRandomMessage('transferFail');
                 }
@@ -617,16 +673,19 @@
                 status.innerText = "Completing transfer...";
                 dogMessage.innerText = getRandomMessage('releaseStart');
                 const releaseOrMintIn = {
-                    originalSender: web3.utils.utf8ToHex(account),
+                    originalSender: account,
                     remoteChainSelector: chains[fromChain].chainSelector,
                     receiver: receiver,
                     amount: amount,
                     localToken: chains[toChain].tokenAddress,
-                    sourcePoolAddress: web3.utils.utf8ToHex(chains[fromChain].poolAddress),
+                    sourcePoolAddress: chains[fromChain].poolAddress,
                     sourcePoolData: "0x",
                     offchainTokenData: "0x"
                 };
-                const tx = await currentPoolContract.methods.releaseOrMint(releaseOrMintIn).send({ from: account });
+                const tx = await currentPoolContract.methods.releaseOrMint(releaseOrMintIn).send({ 
+                    from: account,
+                    gas: web3.utils.toHex(500000)
+                });
                 status.innerText = "Transfer completed!";
                 dogMessage.innerText = getRandomMessage('releaseSuccess');
                 await updateBalances();
