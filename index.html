@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Woofswap - Cross-Chain Bridge</title>
+    <title>Woofswap - Shibarium to Base Bridge</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -75,7 +75,7 @@
             margin-bottom: 5px;
             color: #ff9100;
         }
-        .chain-select, .token-display {
+        .chain-display, .token-display {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -83,18 +83,6 @@
             background: var(--card-bg);
             border-radius: 10px;
             margin-bottom: 10px;
-        }
-        .chain-select select {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            font-size: 1em;
-            cursor: pointer;
-            outline: none;
-        }
-        .chain-select select option {
-            background: var(--card-bg);
-            color: var(--text-color);
         }
         .token-display div {
             display: flex;
@@ -130,25 +118,6 @@
             flex: 1;
         }
         .percentage-buttons button:hover { background: #5a5f8a; }
-        .switch-button {
-            text-align: center;
-            margin: 15px 0;
-        }
-        .switch-button button {
-            padding: 10px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
         .swap-button {
             padding: 15px;
             background: var(--primary-color);
@@ -164,7 +133,7 @@
             background: #4a4f7a;
             cursor: not-allowed;
         }
-        .swap-button:hover:not(:disabled), .switch-button button:hover { background: #e68a00; }
+        .swap-button:hover:not(:disabled) { background: #e68a00; }
         .status {
             margin-top: 10px;
             font-size: 0.9em;
@@ -217,7 +186,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">Woofswap - Cross-Chain Bridge</div>
+        <div class="header">Woofswap - Shibarium to Base Bridge</div>
         <div class="connect-section">
             <button id="connectWalletButton">Connect Wallet</button>
             <div id="networkStatus" class="status">Click to connect...</div>
@@ -227,11 +196,8 @@
                 <span>From</span>
                 <span id="fromBalance">Balance: 0</span>
             </div>
-            <div class="chain-select">
-                <select id="fromChain" onchange="updateChains()">
-                    <option value="Shibarium">Shibarium</option>
-                    <option value="Base">Base</option>
-                </select>
+            <div class="chain-display">
+                <span>Shibarium</span>
             </div>
             <div class="token-display">
                 <div>
@@ -247,16 +213,12 @@
                 <button onclick="setPercentage(100)">MAX</button>
             </div>
         </div>
-        <div class="switch-button">
-            <button onclick="switchChains()">↓↑</button>
-        </div>
         <div class="swap-box">
             <div class="balance-row">
                 <span>To</span>
-                <span id="toBalance">Balance: 0</span>
             </div>
-            <div class="chain-select">
-                <span id="toChain"></span>
+            <div class="chain-display">
+                <span>Base</span>
             </div>
             <div class="token-display">
                 <div>
@@ -306,7 +268,9 @@
             {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
         ];
 
-        let web3, account, currentRouterContract, currentTokenContract, fromChain = 'Shibarium', toChain = 'Base', fromBalance = '0', toBalance = '0';
+        let web3, account, currentRouterContract, currentTokenContract, fromBalance = '0';
+        const fromChain = 'Shibarium';
+        const toChain = 'Base';
 
         const dogMessages = {
             connectSuccess: [
@@ -390,8 +354,8 @@
                             chainId: `0x${chainConfig.chainId.toString(16)}`,
                             chainName: chainConfig.chainName,
                             rpcUrls: [chainConfig.rpcUrl],
-                            nativeCurrency: { name: chainConfig.chainName, symbol: chain === 'Shibarium' ? 'BONE' : 'ETH', decimals: 18 },
-                            blockExplorerUrls: [chain === 'Shibarium' ? 'https://shibariumscan.io' : 'https://basescan.org']
+                            nativeCurrency: { name: chainConfig.chainName, symbol: 'BONE', decimals: 18 },
+                            blockExplorerUrls: ['https://shibariumscan.io']
                         }]
                     });
                 } else {
@@ -407,44 +371,16 @@
             currentTokenContract = new web3.eth.Contract(erc20Abi, chainConfig.tokenAddress);
         }
 
-        function updateChains() {
-            fromChain = document.getElementById('fromChain').value;
-            toChain = fromChain === 'Shibarium' ? 'Base' : 'Shibarium';
-            document.getElementById('toChain').innerText = toChain;
-            if (web3 && account) {
-                switchNetwork(fromChain).then(updateBalances);
-            }
-        }
-
-        function switchChains() {
-            const temp = fromChain;
-            fromChain = toChain;
-            toChain = temp;
-            document.getElementById('fromChain').value = fromChain;
-            document.getElementById('toChain').innerText = toChain;
-            if (web3 && account) {
-                switchNetwork(fromChain).then(updateBalances);
-            }
-        }
-
         async function updateBalances() {
             if (!web3 || !account) return;
             try {
                 const fromChainConfig = chains[fromChain];
-                const toChainConfig = chains[toChain];
                 const fromTokenContract = new web3.eth.Contract(erc20Abi, fromChainConfig.tokenAddress);
                 const fromBalanceRaw = await fromTokenContract.methods.balanceOf(account).call();
                 fromBalance = web3.utils.fromWei(fromBalanceRaw, 'ether');
                 document.getElementById('fromBalance').innerText = `Balance: ${parseFloat(fromBalance).toFixed(4)}`;
-                const toProvider = new Web3.providers.HttpProvider(toChainConfig.rpcUrl);
-                const toWeb3 = new Web3(toProvider);
-                const toTokenContract = new toWeb3.eth.Contract(erc20Abi, toChainConfig.tokenAddress);
-                const toBalanceRaw = await toTokenContract.methods.balanceOf(account).call();
-                toBalance = toWeb3.utils.fromWei(toBalanceRaw, 'ether');
-                document.getElementById('toBalance').innerText = `Balance: ${parseFloat(toBalance).toFixed(4)}`;
             } catch (error) {
                 document.getElementById('fromBalance').innerText = 'Balance: Error';
-                document.getElementById('toBalance').innerText = 'Balance: Error';
                 console.error("Balance update error:", error);
             }
         }
@@ -611,7 +547,6 @@
         }
 
         document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
-        updateChains();
     </script>
 </body>
 </html>
