@@ -205,6 +205,39 @@
             color: var(--secondary-color);
             font-style: italic;
         }
+        .admin-section {
+            margin-top: 20px;
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        .admin-section h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .admin-section input {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+        .admin-button {
+            padding: 12px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .admin-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .admin-button:hover:not(:disabled) {
+            background: #e65a50;
+        }
         @media (max-width: 480px) {
             body { padding: 10px; }
             .container { padding: 15px; }
@@ -268,6 +301,11 @@
             <div class="swap-note" id="swapNote">Cross-chain transfer powered by Chainlink CCIP</div>
         </div>
         <button class="swap-button" id="swapButton" onclick="initiateCrossChainTransfer()">Initiate Transfer</button>
+        <div class="admin-section">
+            <h3>Admin: Add to Allowlist</h3>
+            <input type="text" id="allowlistAddress" placeholder="Enter address to add">
+            <button class="admin-button" id="addToAllowlistButton" onclick="addToAllowlist()">Add Address</button>
+        </div>
         <div class="dog-section">
             <img src="images/shiba.gif" alt="Shiba Dog">
             <div class="dog-message" id="dogMessage">"Woof! Connect your wallet to start bridging, pup!"</div>
@@ -306,7 +344,7 @@
 
         const burnMintErc20Abi = [{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimals_","type":"uint8"},{"internalType":"uint256","name":"maxSupply_","type":"uint256"},{"internalType":"uint256","name":"preMint","type":"uint256"},{"internalType":"address","name":"newOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"CannotTransferToSelf","type":"error"},{"inputs":[{"internalType":"uint256","name":"supplyAfterMint","type":"uint256"}],"name":"MaxSupplyExceeded","type":"error"},{"inputs":[],"name":"MustBeProposedOwner","type":"error"},{"inputs":[],"name":"OnlyCallableByOwner","type":"error"},{"inputs":[],"name":"OwnerCannotBeZero","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"SenderNotBurner","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"SenderNotMinter","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"burner","type":"address"}],"name":"BurnAccessGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"burner","type":"address"}],"name":"BurnAccessRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":true,"internalType":"address","name":"newAdmin","type":"address"}],"name":"CCIPAdminTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"minter","type":"address"}],"name":"MintAccessGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"minter","type":"address"}],"name":"MintAccessRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"internalType":"bool","name":"success","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getBurners","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getCCIPAdmin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMinters","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"grantBurnRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"burnAndMinter","type":"address"}],"name":"grantMintAndBurnRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"grantMintRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"isBurner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"isMinter","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"burner","type":"address"}],"name":"revokeBurnRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"minter","type":"address"}],"name":"revokeMintRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAdmin","type":"address"}],"name":"setCCIPAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
-        let web3, account;
+        let web3, account, contractOwner;
         let fromChain = 'Shibarium';
         let toChain = 'Base';
         let fromBalance = '0';
@@ -348,7 +386,11 @@
             releaseFail: ["Grrr... Couldn’t release/mint, let’s try again, pup!", "Woof? Final step failed, retry it, hooman!", "Arf! Tokens stuck, another go, Shib friend?", "Ruff ruff! Release/mint failed, let’s dig it up again!"],
             notInAllowlist: ["Woof! You’re not on the VIP list, pup! Contact the admin to get added!", "Arf! No entry, hooman! Ask the contract admin to let you in!", "Bow wow! You need permission to bridge, pup! Reach out to the admin!", "Ruff! Not allowed yet, pup! Get the admin to add you!"],
             insufficientLiquidity: ["Woof! Not enough liquidity in the pool, pup! Contact the admin!", "Arf! Pool’s too dry to bridge, hooman! Ask admin for more liquidity!", "Bow wow! Need more juice in the pool, pup! Tell the admin!", "Ruff! Can’t bridge, pool’s empty! Fetch the admin, pup!"],
-            liquidityNotAccepted: ["Woof! This pool doesn’t accept liquidity, pup! Try another chain!", "Arf! No liquidity here, hooman! Switch chains or ask admin!", "Bow wow! Pool says no to liquidity, pup! Find another path!", "Ruff! Can’t add liquidity here, pup! Check with admin!"]
+            liquidityNotAccepted: ["Woof! This pool doesn’t accept liquidity, pup! Try another chain!", "Arf! No liquidity here, hooman! Switch chains or ask admin!", "Bow wow! Pool says no to liquidity, pup! Find another path!", "Ruff! Can’t add liquidity here, pup! Check with admin!"],
+            adminNotOwner: ["Woof! Only the admin can add addresses, pup! Are you the owner?", "Arf! You’re not the boss, hooman! Only the owner can do this!", "Bow wow! Admin only, pup! Check if you’re the owner!", "Ruff! Not the admin, pup! Owner needs to add the address!"],
+            adminSuccess: ["Woof woof! Address added to the VIP list, pup!", "Arf! New pup on the list, ready to bridge!", "Bow wow! VIP access granted, let’s cross chains!", "Yip yip! Address added, you’re in the pack now!"],
+            adminFail: ["Grrr... Couldn’t add the address, try again, pup!", "Woof? Adding failed, something’s off, hooman!", "Arf! Address didn’t make the list, retry, pup!", "Ruff ruff! Failed to add, let’s dig into it again!"],
+            invalidAddress: ["Woof! That address doesn’t smell right, pup!", "Arf! Invalid address, hooman! Check it again!", "Bow wow! Address looks wrong, pup! Fix it up!", "Ruff! Bad address, pup! Let’s try a valid one!"]
         };
 
         function getRandomMessage(type, param1) {
@@ -381,6 +423,7 @@
                 account = accounts[0];
                 await switchChain(fromChain);
                 await initializeContracts();
+                await fetchContractOwner();
                 updateUIAfterConnect();
                 await updateBalances();
             } catch (error) {
@@ -390,6 +433,26 @@
                 resetUI();
             } finally {
                 connectButton.disabled = false;
+            }
+        }
+
+        async function fetchContractOwner() {
+            try {
+                contractOwner = await currentPoolContract.methods.owner().call();
+                console.log("Contract owner:", contractOwner);
+                updateAdminSection();
+            } catch (error) {
+                console.error("Failed to fetch contract owner:", error);
+                contractOwner = null;
+            }
+        }
+
+        function updateAdminSection() {
+            const addButton = document.getElementById('addToAllowlistButton');
+            if (account && contractOwner && account.toLowerCase() === contractOwner.toLowerCase()) {
+                addButton.disabled = false;
+            } else {
+                addButton.disabled = true;
             }
         }
 
@@ -427,6 +490,7 @@
             connectButton.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
             status.innerText = `Connected to ${fromChain}`;
             dogMessage.innerText = getRandomMessage('connectSuccess');
+            updateAdminSection();
         }
 
         function resetUI() {
@@ -434,6 +498,7 @@
             const status = document.getElementById('networkStatus');
             connectButton.textContent = "Connect Wallet";
             status.innerText = "Click to connect...";
+            document.getElementById('addToAllowlistButton').disabled = true;
         }
 
         function setupWalletListeners() {
@@ -444,6 +509,7 @@
                     if (web3) {
                         await switchChain(fromChain);
                         await initializeContracts();
+                        await fetchContractOwner();
                         updateUIAfterConnect();
                         await updateBalances();
                     } else {
@@ -452,6 +518,7 @@
                 } else {
                     web3 = null;
                     account = null;
+                    contractOwner = null;
                     currentPoolContract = null;
                     currentTokenContract = null;
                     resetUI();
@@ -463,6 +530,7 @@
                 if (newChainId !== chains[fromChain].chainId) {
                     web3 = null;
                     account = null;
+                    contractOwner = null;
                     currentPoolContract = null;
                     currentTokenContract = null;
                     resetUI();
@@ -493,7 +561,9 @@
             document.getElementById('toChain').innerText = toChain;
             if (web3 && account) {
                 switchChain(fromChain).then(() => {
-                    initializeContracts().then(updateBalances);
+                    initializeContracts().then(() => {
+                        fetchContractOwner().then(updateBalances);
+                    });
                     document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
                 });
             }
@@ -507,7 +577,9 @@
             document.getElementById('toChain').innerText = toChain;
             if (web3 && account) {
                 switchChain(fromChain).then(() => {
-                    initializeContracts().then(updateBalances);
+                    initializeContracts().then(() => {
+                        fetchContractOwner().then(updateBalances);
+                    });
                     document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
                 });
             }
@@ -678,6 +750,62 @@
             }
         }
 
+        async function addToAllowlist() {
+            const status = document.getElementById('networkStatus');
+            const addButton = document.getElementById('addToAllowlistButton');
+            const dogMessage = document.getElementById('dogMessage');
+            const addressToAdd = document.getElementById('allowlistAddress').value.trim();
+
+            if (!web3 || !account) {
+                status.innerText = "Please connect wallet first.";
+                dogMessage.innerText = getRandomMessage('connectFail');
+                return;
+            }
+
+            if (!web3.utils.isAddress(addressToAdd)) {
+                status.innerText = "Invalid address.";
+                dogMessage.innerText = getRandomMessage('invalidAddress');
+                return;
+            }
+
+            if (!contractOwner || account.toLowerCase() !== contractOwner.toLowerCase()) {
+                status.innerText = "Only the contract owner can add addresses.";
+                dogMessage.innerText = getRandomMessage('adminNotOwner');
+                return;
+            }
+
+            try {
+                addButton.disabled = true;
+                status.innerText = "Adding address to allowlist...";
+                dogMessage.innerText = "Woof! Adding new pup to the VIP list...";
+
+                const removes = [];
+                const adds = [addressToAdd];
+                const tx = await currentPoolContract.methods.applyAllowListUpdates(removes, adds).send({ from: account });
+                console.log("Address added to allowlist:", tx.transactionHash);
+
+                status.innerText = `Address ${addressToAdd.slice(0, 6)}...${addressToAdd.slice(-4)} added to allowlist!`;
+                dogMessage.innerText = getRandomMessage('adminSuccess');
+                document.getElementById('allowlistAddress').value = '';
+            } catch (error) {
+                console.error("Failed to add address to allowlist:", error);
+                let errorMessage = error.message || "Unknown error";
+                if (error.message.includes("User denied transaction signature")) {
+                    errorMessage = "User denied transaction signature.";
+                    dogMessage.innerText = getRandomMessage('userDenied');
+                } else if (error.message.includes("OnlyCallableByOwner")) {
+                    errorMessage = "Only the contract owner can add addresses.";
+                    dogMessage.innerText = getRandomMessage('adminNotOwner');
+                } else {
+                    errorMessage = `Failed to add address: ${error.message}`;
+                    dogMessage.innerText = getRandomMessage('adminFail');
+                }
+                status.innerText = errorMessage;
+            } finally {
+                addButton.disabled = false;
+            }
+        }
+
         async function initiateCrossChainTransfer() {
             const status = document.getElementById('networkStatus');
             const swapButton = document.getElementById('swapButton');
@@ -823,77 +951,77 @@
             }
         }
 
-        async function completeCrossChainTransfer(amount, receiver) {
-            const status = document.getElementById('networkStatus');
-            const swapButton = document.getElementById('swapButton');
-            const dogMessage = document.getElementById('dogMessage');
-            try {
-                swapButton.disabled = true;
-                status.innerText = "Completing transfer...";
-                dogMessage.innerText = getRandomMessage('releaseStart');
-                const releaseOrMintIn = {
-                    originalSender: web3.utils.hexToBytes(account),
-                    remoteChainSelector: chains[fromChain].chainSelector,
-                    receiver: receiver,
-                    amount: amount,
-                    localToken: chains[toChain].tokenAddress,
-                    sourcePoolAddress: web3.utils.hexToBytes(chains[fromChain].poolAddress),
-                    sourcePoolData: "0x",
-                    offchainTokenData: "0x"
-                };
-                const tx = await currentPoolContract.methods.releaseOrMint(releaseOrMintIn).send({ 
-                    from: account,
-                    gas: web3.utils.toHex(500000)
-                });
-                status.innerText = "Transfer completed!";
-                dogMessage.innerText = getRandomMessage('releaseSuccess');
-                await updateBalances();
-                swapButton.textContent = "Initiate Transfer";
-                swapButton.onclick = initiateCrossChainTransfer;
-                listenForEvents(tx, toChain);
-            } catch (error) {
-                console.error("Release/Mint failed:", error);
-                let errorMessage = error.message || "Unknown error";
-                if (error.message.includes("User denied transaction signature")) {
-                    errorMessage = "User denied transaction signature.";
-                    dogMessage.innerText = getRandomMessage('userDenied');
-                } else if (error.message.includes("InsufficientLiquidity")) {
-                    errorMessage = "Insufficient liquidity in the pool.";
-                    dogMessage.innerText = getRandomMessage('insufficientLiquidity');
-                } else if (error.message.includes("LiquidityNotAccepted")) {
-                    errorMessage = "Pool does not accept liquidity.";
-                    dogMessage.innerText = getRandomMessage('liquidityNotAccepted');
-                } else {
-                    errorMessage = `Release/Mint failed: ${error.message}`;
-                    dogMessage.innerText = getRandomMessage('releaseFail');
-                }
-                status.innerText = errorMessage;
-            } finally {
-                swapButton.disabled = false;
-            }
+async function completeCrossChainTransfer(amount, receiver) {
+    const status = document.getElementById('networkStatus');
+    const swapButton = document.getElementById('swapButton');
+    const dogMessage = document.getElementById('dogMessage');
+    try {
+        swapButton.disabled = true;
+        status.innerText = "Completing transfer...";
+        dogMessage.innerText = getRandomMessage('releaseStart');
+        const releaseOrMintIn = {
+            originalSender: web3.utils.hexToBytes(account),
+            remoteChainSelector: chains[fromChain].chainSelector,
+            receiver: receiver,
+            amount: amount,
+            localToken: chains[toChain].tokenAddress,
+            sourcePoolAddress: web3.utils.hexToBytes(chains[fromChain].poolAddress),
+            sourcePoolData: "0x",
+            offchainTokenData: "0x"
+        };
+        const tx = await currentPoolContract.methods.releaseOrMint(releaseOrMintIn).send({ 
+            from: account,
+            gas: web3.utils.toHex(500000)
+        });
+        status.innerText = "Transfer completed!";
+        dogMessage.innerText = getRandomMessage('releaseSuccess');
+        await updateBalances();
+        swapButton.textContent = "Initiate Transfer";
+        swapButton.onclick = initiateCrossChainTransfer;
+        listenForEvents(tx, toChain);
+    } catch (error) {
+        console.error("Release/Mint failed:", error);
+        let errorMessage = error.message || "Unknown error";
+        if (error.message.includes("User denied transaction signature")) {
+            errorMessage = "User denied transaction signature.";
+            dogMessage.innerText = getRandomMessage('userDenied');
+        } else if (error.message.includes("InsufficientLiquidity")) {
+            errorMessage = "Insufficient liquidity in the pool.";
+            dogMessage.innerText = getRandomMessage('insufficientLiquidity');
+        } else if (error.message.includes("LiquidityNotAccepted")) {
+            errorMessage = "Pool does not accept liquidity.";
+            dogMessage.innerText = getRandomMessage('liquidityNotAccepted');
+        } else {
+            errorMessage = `Release/Mint failed: ${error.message}`;
+            dogMessage.innerText = getRandomMessage('releaseFail');
         }
+        status.innerText = errorMessage;
+    } finally {
+        swapButton.disabled = false;
+    }
+}
 
-        function listenForEvents(tx, chainName) {
-            const status = document.getElementById('networkStatus');
-            if (chainName === 'Shibarium') {
-                const lockedEvent = tx.events?.Locked;
-                if (lockedEvent) {
-                    const amount = web3.utils.fromWei(lockedEvent.returnValues.amount, 'ether');
-                    status.innerText = `Locked ${amount} LUISA on Shibarium! Switching to Base...`;
-                }
-            } else if (chainName === 'Base') {
-                const burnedEvent = tx.events?.Burned;
-                const mintedEvent = tx.events?.Minted;
-                if (burnedEvent) {
-                    const amount = web3.utils.fromWei(burnedEvent.returnValues.amount, 'ether');
-                    status.innerText = `Burned ${amount} LUISA on Base! Switching to Shibarium...`;
-                }
-                if (mintedEvent) {
-                    const amount = web3.utils.fromWei(mintedEvent.returnValues.amount, 'ether');
-                    status.innerText = `Minted ${amount} LUISA on Base! Transfer complete.`;
-                }
-            }
+function listenForEvents(tx, chainName) {
+    const status = document.getElementById('networkStatus');
+    if (chainName === 'Shibarium') {
+        const lockedEvent = tx.events?.Locked;
+        if (lockedEvent) {
+            const amount = web3.utils.fromWei(lockedEvent.returnValues.amount, 'ether');
+            status.innerText = `Locked ${amount} LUISA on Shibarium! Switching to Base...`;
         }
-    </script>
+    } else if (chainName === 'Base') {
+        const burnedEvent = tx.events?.Burned;
+        const mintedEvent = tx.events?.Minted;
+        if (burnedEvent) {
+            const amount = web3.utils.fromWei(burnedEvent.returnValues.amount, 'ether');
+            status.innerText = `Burned ${amount} LUISA on Base! Switching to Shibarium...`;
+        }
+        if (mintedEvent) {
+            const amount = web3.utils.fromWei(mintedEvent.returnValues.amount, 'ether');
+            status.innerText = `Minted ${amount} LUISA on Base! Transfer complete.`;
+        }
+    }
+}
+</script>
 </body>
 </html>
