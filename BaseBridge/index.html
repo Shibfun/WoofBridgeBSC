@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Woofswap - Shibarium to Base Bridge</title>
+    <title>Woofswap - Base to Shibarium Bridge</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -186,7 +186,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">Woofswap - Shibarium to Base Bridge</div>
+        <div class="header">Woofswap - Base to Shibarium Bridge</div>
         <div class="connect-section">
             <button id="connectWalletButton">Connect Wallet</button>
             <div id="networkStatus" class="status">Click to connect...</div>
@@ -197,7 +197,7 @@
                 <span id="fromBalance">Balance: 0</span>
             </div>
             <div class="chain-display">
-                <span>Shibarium</span>
+                <span>Base</span>
             </div>
             <div class="token-display">
                 <div>
@@ -218,7 +218,7 @@
                 <span>To</span>
             </div>
             <div class="chain-display">
-                <span>Base</span>
+                <span>Shibarium</span>
             </div>
             <div class="token-display">
                 <div>
@@ -238,16 +238,6 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
         const chains = {
-            Shibarium: {
-                chainId: 109,
-                chainName: 'Shibarium',
-                rpcUrl: 'https://rpc.shibariumchain.com',
-                poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
-                tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
-                chainSelector: '3993510008929295315',
-                mechanism: 'Lock & Release',
-                routerAddress: '0xc2CA5d5C17911e4B838194b51585DdF8fe5116C1'
-            },
             Base: {
                 chainId: 8453,
                 chainName: 'Base',
@@ -257,6 +247,16 @@
                 chainSelector: '15971525489660198786',
                 mechanism: 'Burn & Mint',
                 routerAddress: '0x881e3A65B4d4a04dD529061dd0071cf975F58bCD'
+            },
+            Shibarium: {
+                chainId: 109,
+                chainName: 'Shibarium',
+                rpcUrl: 'https://rpc.shibariumchain.com',
+                poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
+                tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
+                chainSelector: '3993510008929295315',
+                mechanism: 'Lock & Release',
+                routerAddress: '0xc2CA5d5C17911e4B838194b51585DdF8fe5116C1'
             }
         };
 
@@ -269,8 +269,8 @@
         ];
 
         let web3, account, currentRouterContract, currentTokenContract, fromBalance = '0';
-        const fromChain = 'Shibarium';
-        const toChain = 'Base';
+        const fromChain = 'Base';
+        const toChain = 'Shibarium';
 
         const dogMessages = {
             connectSuccess: [
@@ -354,8 +354,8 @@
                             chainId: `0x${chainConfig.chainId.toString(16)}`,
                             chainName: chainConfig.chainName,
                             rpcUrls: [chainConfig.rpcUrl],
-                            nativeCurrency: { name: chainConfig.chainName, symbol: 'BONE', decimals: 18 },
-                            blockExplorerUrls: ['https://shibariumscan.io']
+                            nativeCurrency: { name: chainConfig.chainName, symbol: 'ETH', decimals: 18 },
+                            blockExplorerUrls: ['https://basescan.org']
                         }]
                     });
                 } else {
@@ -521,7 +521,7 @@
                     extraArgs: '0x'
                 };
                 const fee = await currentRouterContract.methods.getFee(destinationChainSelector, message).call();
-                console.log(`Estimated fee: ${web3.utils.fromWei(fee, 'ether')} BONE`);
+                console.log(`Estimated fee: ${web3.utils.fromWei(fee, 'ether')} ETH`);
 
                 status.innerText = "Initiating cross-chain transfer...";
                 const tx = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).send({
