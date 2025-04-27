@@ -567,6 +567,44 @@
             }
         }
 
+        async function checkAllowList() {
+            const status = document.getElementById('networkStatus');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                const allowList = await currentPoolContract.methods.getAllowList().call();
+                if (!allowList.includes(account)) {
+                    status.innerText = "Sender not in allowlist.";
+                    dogMessage.innerText = "Woof! You’re not allowed to bridge, pup!";
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error("Allowlist check failed:", error);
+                status.innerText = "Error checking allowlist.";
+                dogMessage.innerText = "Woof! Can’t check permissions, pup!";
+                return false;
+            }
+        }
+
+        async function checkTokenSupport() {
+            const status = document.getElementById('networkStatus');
+            const dogMessage = document.getElementById('dogMessage');
+            try {
+                const isSupported = await currentPoolContract.methods.isSupportedToken(chains[fromChain].tokenAddress).call();
+                if (!isSupported) {
+                    status.innerText = "Token not supported by the pool.";
+                    dogMessage.innerText = "Woof! This token isn’t supported, pup!";
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error("Token support check failed:", error);
+                status.innerText = "Error checking token support.";
+                dogMessage.innerText = "Woof! Can’t confirm the token, pup!";
+                return false;
+            }
+        }
+
         async function approveToken(tokenAddress, amount) {
             const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
             const allowance = await tokenContract.methods.allowance(account, chains[fromChain].poolAddress).call();
@@ -622,11 +660,19 @@
                     swapButton.disabled = false;
                     return;
                 }
+                if (!(await checkAllowList())) {
+                    swapButton.disabled = false;
+                    return;
+                }
+                if (!(await checkTokenSupport())) {
+                    swapButton.disabled = false;
+                    return;
+                }
                 status.innerText = "Processing transfer...";
                 dogMessage.innerText = getRandomMessage('transferStart');
                 await approveToken(chains[fromChain].tokenAddress, amountWei);
                 const lockOrBurnIn = {
-                    receiver: receiver,
+                    receiver: web3.utils.hexToBytes(receiver),
                     remoteChainSelector: chains[toChain].chainSelector,
                     originalSender: account,
                     amount: amountWei,
@@ -656,7 +702,14 @@
                 } else if (error.message.includes("ChainNotAllowed")) {
                     errorMessage = "Target chain not supported.";
                     dogMessage.innerText = `Woof! Can’t bridge to ${toChain}, pup!`;
+                } else if (error.message.includes("SenderNotAllowed")) {
+                    errorMessage = "Sender not allowed. Contact the contract admin.";
+                    dogMessage.innerText = "Woof! You’re not allowed to bridge, pup!";
+                } else if (error.message.includes("InvalidToken")) {
+                    errorMessage = "Invalid token address.";
+                    dogMessage.innerText = "Woof! This token isn’t right, pup!";
                 } else {
+                    errorMessage = `Transaction failed: ${error.message}`;
                     dogMessage.innerText = getRandomMessage('transferFail');
                 }
                 status.innerText = errorMessage;
@@ -673,12 +726,12 @@
                 status.innerText = "Completing transfer...";
                 dogMessage.innerText = getRandomMessage('releaseStart');
                 const releaseOrMintIn = {
-                    originalSender: account,
+                    originalSender: web3.utils.hexToBytes(account),
                     remoteChainSelector: chains[fromChain].chainSelector,
                     receiver: receiver,
                     amount: amount,
                     localToken: chains[toChain].tokenAddress,
-                    sourcePoolAddress: chains[fromChain].poolAddress,
+                    sourcePoolAddress: web3.utils.hexToBytes(chains[fromChain].poolAddress),
                     sourcePoolData: "0x",
                     offchainTokenData: "0x"
                 };
