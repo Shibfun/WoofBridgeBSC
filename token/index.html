@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woofswap Token Addresses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .token-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        .token-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .token-header img {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+        .token-header h3 {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .address-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .address-label {
+            flex: 1;
+            color: var(--primary-color);
+        }
+        .address-value {
+            flex: 3;
+            word-break: break-all;
+            color: var(--text-color);
+        }
+        .copy-button {
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.2s;
+            margin-left: 10px;
+        }
+        .copy-button:hover {
+            background: #e68a00;
+        }
+        .copy-button.copied {
+            background: #4a4f7a;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-top: 20px;
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+            .token-header img { width: 24px; height: 24px; }
+            .token-header h3 { font-size: 1em; }
+            .address-row { font-size: 0.8em; }
+            .copy-button { padding: 4px 8px; font-size: 0.7em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Woofswap Token Addresses</div>
+        
+        <!-- LUISA -->
+        <div class="token-box">
+            <div class="token-header">
+                <img src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="LUISA">
+                <h3>LUISA</h3>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Shibarium Token:</span>
+                <span class="address-value">0x0cCD687CC6F8461170336D8e8cf46A39313DEab9</span>
+                <button class="copy-button" onclick="copyAddress('0x0cCD687CC6F8461170336D8e8cf46A39313DEab9', this)">Copy</button>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Base Token:</span>
+                <span class="address-value">0x5699c51660C765e57793D1837B400B241cbC4B46</span>
+                <button class="copy-button" onclick="copyAddress('0x5699c51660C765e57793D1837B400B241cbC4B46', this)">Copy</button>
+            </div>
+        </div>
+
+        <!-- USAGI -->
+        <div class="token-box">
+            <div class="token-header">
+                <img src="https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/Usagi.png" alt="USAGI">
+                <h3>USAGI</h3>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Shibarium Token:</span>
+                <span class="address-value">0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79</span>
+                <button class="copy-button" onclick="copyAddress('0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79', this)">Copy</button>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Base Token:</span>
+                <span class="address-value">0x760295aa772671f21cd0046d094938d09f2b380d</span>
+                <button class="copy-button" onclick="copyAddress('0x760295aa772671f21cd0046d094938d09f2b380d', this)">Copy</button>
+            </div>
+        </div>
+
+        <!-- NEKO -->
+        <div class="token-box">
+            <div class="token-header">
+                <img src="https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/neko.png" alt="NEKO">
+                <h3>NEKO</h3>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Shibarium Token:</span>
+                <span class="address-value">0x63a67329f761517570345ee86f791f74f9dc5461</span>
+                <button class="copy-button" onclick="copyAddress('0x63a67329f761517570345ee86f791f74f9dc5461', this)">Copy</button>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Base Token:</span>
+                <span class="address-value">0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8</span>
+                <button class="copy-button" onclick="copyAddress('0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8', this)">Copy</button>
+            </div>
+        </div>
+
+        <!-- CANNED -->
+        <div class="token-box">
+            <div class="token-header">
+                <img src="https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/CANNED.png" alt="CANNED">
+                <h3>CANNED</h3>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Shibarium Token:</span>
+                <span class="address-value">0x5d63c604803bbf7919953b73c89309b5cbcc227a</span>
+                <button class="copy-button" onclick="copyAddress('0x5d63c604803bbf7919953b73c89309b5cbcc227a', this)">Copy</button>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Base Token:</span>
+                <span class="address-value">0xa2e543ee6531bb9640dde7ad018ea965cd936a67</span>
+                <button class="copy-button" onclick="copyAddress('0xa2e543ee6531bb9640dde7ad018ea965cd936a67', this)">Copy</button>
+            </div>
+        </div>
+
+        <!-- SHIPA -->
+        <div class="token-box">
+            <div class="token-header">
+                <img src="https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/shipa.png" alt="SHIPA">
+                <h3>SHIPA</h3>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Shibarium Token:</span>
+                <span class="address-value">0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad</span>
+                <button class="copy-button" onclick="copyAddress('0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad', this)">Copy</button>
+            </div>
+            <div class="address-row">
+                <span class="address-label">Base Token:</span>
+                <span class="address-value">0x74b017277bffc58be2d4d61097a69d584dcaf32f</span>
+                <button class="copy-button" onclick="copyAddress('0x74b017277bffc58be2d4d61097a69d584dcaf32f', this)">Copy</button>
+            </div>
+        </div>
+
+        <div class="footer">Woofswap - Shibarium to Base Bridge</div>
+    </div>
+    <script>
+        function copyAddress(address, button) {
+            navigator.clipboard.writeText(address).then(() => {
+                button.classList.add('copied');
+                button.innerText = 'Copied!';
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerText = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy address:', err);
+            });
+        }
+    </script>
+</body>
+</html>
