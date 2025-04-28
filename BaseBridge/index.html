@@ -214,11 +214,13 @@
                     <img id="fromTokenLogo" src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="Token">
                     <span id="fromTokenName">LUISA</span>
                 </div>
-                <select id="tokenSelector" onchange="updateTokenSelection()">
-                    <option value="LUISA">LUISA</option>
-                    <option value="USAGI">USAGI</option>
-                    <option value="NEKO">NEKO</option>
-                </select>
+<select id="tokenSelector" onchange="updateTokenSelection()">
+    <option value="LUISA">LUISA</option>
+    <option value="USAGI">USAGI</option>
+    <option value="NEKO">NEKO</option>
+    <option value="CANNED">CANNED</option>
+    <option value="SHIPA">SHIPA</option>
+</select>
             </div>
             <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
             <div class="percentage-buttons">
@@ -252,47 +254,73 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
-        const tokens = {
-            LUISA: {
-                logo: 'https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png',
-                Base: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
-                    tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46'
-                },
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
-                    tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9'
-                }
-            },
-            USAGI: {
-                logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/Usagi.png',
-                Base: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
-                    tokenAddress: '0x760295aa772671f21cd0046d094938d09f2b380d'
-                },
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xc488be11a33c20bd21f7940d4a5937e8a8c81fec',
-                    tokenAddress: '0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79'
-                }
-            },
-            NEKO: {
-                logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/neko.png',
-                Base: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
-                    tokenAddress: '0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8'
-                },
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xdce9cf770345584f2dfaa2ea23625cf3edd6b7cf',
-                    tokenAddress: '0x63a67329f761517570345ee86f791f74f9dc5461'
-                }
-            }
-        };
+const tokens = {
+    LUISA: {
+        logo: 'https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
+            tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
+            tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9'
+        }
+    },
+    USAGI: {
+        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/Usagi.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
+            tokenAddress: '0x760295aa772671f21cd0046d094938d09f2b380d'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0xc488be11a33c20bd21f7940d4a5937e8a8c81fec',
+            tokenAddress: '0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79'
+        }
+    },
+    NEKO: {
+        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/neko.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
+            tokenAddress: '0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0xdce9cf770345584f2dfaa2ea23625cf3edd6b7cf',
+            tokenAddress: '0x63a67329f761517570345ee86f791f74f9dc5461'
+        }
+    },
+    CANNED: {
+        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/CANNED.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0x5d7ccbaa5b0d65aa8a2ed5989b32c64963fdf370',
+            tokenAddress: '0xa2e543ee6531bb9640dde7ad018ea965cd936a67'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0x9076efcac1a98df0edc756e3892ed0f54a2f4a29',
+            tokenAddress: '0x5d63c604803bbf7919953b73c89309b5cbcc227a'
+        }
+    },
+    SHIPA: {
+        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/shipa.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0x54169d9660c21a83c68eb7aed04ae87ff1b69d5c',
+            tokenAddress: '0x74b017277bffc58be2d4d61097a69d584dcaf32f'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0x67a3b613b2398b43e0b12dd6a07b30cdacb6a61d',
+            tokenAddress: '0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad'
+        }
+    }
+};
 
         const chains = {
             Base: {
