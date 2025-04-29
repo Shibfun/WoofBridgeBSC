@@ -82,7 +82,7 @@
             padding: 10px;
             background: var(--card-bg);
             border-radius: 10px;
-            margin-bottom:`*`10px;
+            margin-bottom: 10px;
         }
         .token-display div {
             display: flex;
@@ -93,16 +93,6 @@
             height: 24px;
             margin-right: 10px;
         }
-        select {
-            background: var(--input-bg);
-            color: var(--text-color);
-            border: none;
-            padding: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        select:focus { outline: none; }
         input {
             width: 100%;
             padding: 10px;
@@ -211,17 +201,9 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img id="fromTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
-                    <span id="fromTokenName">LUISA</span>
+                    <img id="fromTokenLogo" src="https://woofswap.finance/image/tokens/Snow.png" alt="Token">
+                    <span id="fromTokenName">SNOW</span>
                 </div>
-                <select id="tokenSelector" onchange="updateTokenSelection()">
-                    <option value="LUISA">LUISA</option>
-                    <option value="USAGI">USAGI</option>
-                    <option value="NEKO">NEKO</option>
-                    <option value="CANNED">CANNED</option>
-                    <option value="SHIPA">SHIPA</option>
-                    <option value="SNOW">SNOW</option>
-                </select>
             </div>
             <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
             <div class="percentage-buttons">
@@ -240,8 +222,8 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img id="toTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
-                    <span id="toTokenName">LUISA</span>
+                    <img id="toTokenLogo" src="https://woofswap.finance/image/tokens/Snow.png" alt="Token">
+                    <span id="toTokenName">SNOW</span>
                 </div>
             </div>
             <input type="text" id="receiverAddress" placeholder="Receiver Address (defaults to your address)">
@@ -256,71 +238,6 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
         const tokens = {
-            LUISA: {
-                logo: 'https://www.woofswap.finance/image/tokens/luisa.png',
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
-                    tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9'
-                },
-                BNBChain: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
-                    tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46'
-                }
-            },
-            USAGI: {
-                logo: 'https://woofswap.finance/image/tokens/Usagi.png',
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xc488be11a33c20bd21f7940d4a5937e8a8c81fec',
-                    tokenAddress: '0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79'
-                },
-                BNBChain: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
-                    tokenAddress: '0x760295aa772671f21cd0046d094938d09f2b380d'
-                }
-            },
-            NEKO: {
-                logo: 'https://woofswap.finance/image/tokens/neko1.png',
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0xdce9cf770345584f2dfaa2ea23625cf3edd6b7cf',
-                    tokenAddress: '0x63a67329f761517570345ee86f791f74f9dc5461'
-                },
-                BNBChain: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
-                    tokenAddress: '0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8'
-                }
-            },
-            CANNED: {
-                logo: 'https://www.woofswap.finance/image/tokens/CANNED.png',
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0x9076efcac1a98df0edc756e3892ed0f54a2f4a29',
-                    tokenAddress: '0x5d63c604803bbf7919953b73c89309b5cbcc227a'
-                },
-                BNBChain: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x5d7ccbaa5b0d65aa8a2ed5989b32c64963fdf370',
-                    tokenAddress: '0xa2e543ee6531bb9640dde7ad018ea965cd936a67'
-                }
-            },
-            SHIPA: {
-                logo: 'https://woofswap.finance/image/tokens/shipa.png',
-                Shibarium: {
-                    mechanism: 'Lock & Release',
-                    poolAddress: '0x67a3b613b2398b43e0b12dd6a07b30cdacb6a61d',
-                    tokenAddress: '0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad'
-                },
-                BNBChain: {
-                    mechanism: 'Burn & Mint',
-                    poolAddress: '0x54169d9660c21a83c68eb7aed04ae87ff1b69d5c',
-                    tokenAddress: '0x74b017277bffc58be2d4d61097a69d584dcaf32f'
-                }
-            },
             SNOW: {
                 logo: 'https://woofswap.finance/image/tokens/Snow.png',
                 Shibarium: {
@@ -353,7 +270,7 @@
             }
         };
 
-        const routerAbi = [{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"},{"internalType":"address","name":"armProxy","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadARMSignal","type":"error"},{"inputs":[],"name":"FailedToSendValue","type":"error"},{"inputs":[],"name":"InsufficientFeeTokenAmount","type":"error"},{"inputs":[],"name":"InvalidMsgValue","type":"error"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"InvalidRecipientAddress","type":"error"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampMismatch","type":"error"},{"inputs":[],"name":"OnlyOffRamp","type":"error"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"UnsupportedDestinationChain","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"messageId","type":"bytes32"},{"indexed":false,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"},{"indexed":false,"internalType":"bytes32","name":"calldataHash","type":"bytes32"}],"name":"MessageExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"onRamp","type":"address"}],"name":"OnRampSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"MAX_RET_BYTES","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"internalType":"address","name":"onRamp","type":"address"}],"internalType":"struct Router.OnRamp[]","name":"onRampUpdates","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampRemoves","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampAdds","type":"tuple[]"}],"name":"applyRampUpdates","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"ccipSend","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getArmProxy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"getFee","outputs":[{"internalType":"uint256","name":"fee","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getOffRamps","outputs":[{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"getOnRamp","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"getSupportedTokens","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getWrappedNative","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"isChainSupported","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"isOffRamp","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"recoverTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"bytes32","name":"messageId","type":"bytes32"},{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"bytes","name":"sender","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"destTokenAmounts","type":"tuple[]"}],"internalType":"struct Client.Any2EVMMessage","name":"message","type":"tuple"},{"internalType":"uint16","name":"gasForCallExactCheck","type":"uint16"},{"internalType":"uint256","name":"gasLimit","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"}],"name":"routeMessage","outputs":[{"internalType":"bool","name":"success","type":"bool"},{"internalType":"bytes","name":"retData","type":"bytes"},{"internalType":"uint256","name":"gasUsed","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"}],"name":"setWrappedNative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+        const routerAbi = [{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"},{"internalType":"address","name":"armProxy","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadARMSignal","type":"error"},{"inputs":[],"name":"FailedToSendValue","type":"error"},{"inputs":[],"name":"InsufficientFeeTokenAmount","type":"error"},{"inputs":[],"name":"InvalidMsgValue","type":"error"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"InvalidRecipientAddress","type":"error"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampMismatch","type":"error"},{"inputs":[],"name":"OnlyOffRamp","type":"error"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"UnsupportedDestinationChain","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"messageId","type":"bytes32"},{"indexed":false,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"},{"indexed":false,"internalType":"bytes32","name":"calldataHash","type":"bytes32"}],"name":"MessageExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"onRamp","type":"address"}],"name":"OnRampSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"MAX_RET_BYTES","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"internalType":"address","name":"onRamp","type":"address"}],"internalType":"struct Router.OnRamp[]","name":"onRampUpdates","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampRemoves","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampAdds","type":"tuple[]"}],"name":"applyRampUpdates","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"ccipSend","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getArmProxy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"getFee","outputs":[{"internalType":"uint256","name":"fee","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getOffcommodity","outputs":[{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"getOnRamp","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"getSupportedTokens","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getWrappedNative","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"isChainSupported","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"isOffRamp","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"recoverTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"bytes32","name":"messageId","type":"bytes32"},{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"bytes","name":"sender","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"destTokenAmounts","type":"tuple[]"}],"internalType":"struct Client.Any2EVMMessage","name":"message","type":"tuple"},{"internalType":"uint16","name":"gasForCallExactCheck","type":"uint16"},{"internalType":"uint256","name":"gasLimit","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"}],"name":"routeMessage","outputs":[{"internalType":"bool","name":"success","type":"bool"},{"internalType":"bytes","name":"retData","type":"bytes"},{"internalType":"uint256","name":"gasUsed","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"}],"name":"setWrappedNative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
 
         const erc20Abi = [
             {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},
@@ -364,7 +281,7 @@
         let web3, account, currentRouterContract, currentTokenContract, fromBalance = '0';
         const fromChain = 'Shibarium';
         const toChain = 'BNBChain';
-        let selectedToken = 'LUISA';
+        let selectedToken = 'SNOW';
 
         const dogMessages = {
             connectSuccess: [
@@ -410,7 +327,6 @@
         }
 
         function updateTokenSelection() {
-            selectedToken = document.getElementById('tokenSelector').value;
             const tokenConfig = tokens[selectedToken];
             document.getElementById('fromTokenLogo').src = tokenConfig.logo;
             document.getElementById('fromTokenName').innerText = selectedToken;
@@ -429,7 +345,7 @@
                     account = accounts[0];
                     document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
                     await switchNetwork(fromChain);
-                    await initializeContracts();
+                    await updateTokenSelection();
                     await updateBalances();
                     document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
@@ -459,8 +375,8 @@
                             chainId: `0x${chainConfig.chainId.toString(16)}`,
                             chainName: chainConfig.chainName,
                             rpcUrls: [chainConfig.rpcUrl],
-                            nativeCurrency: { name: chainConfig.chainName, symbol: 'BONE', decimals: 18 },
-                            blockExplorerUrls: ['https://shibariumscan.io']
+                            nativeCurrency: { name: chainConfig.chainName, symbol: chain === 'Shibarium' ? 'BONE' : 'BNB', decimals: 18 },
+                            blockExplorerUrls: [chain === 'Shibarium' ? 'https://shibariumscan.io' : 'https://bscscan.com']
                         }]
                     });
                 } else {
@@ -594,7 +510,7 @@
                 status.innerText = "Checking chain support...";
                 dogMessage.innerText = getRandomMessage('transferStart');
 
-                const destinationChainSelector = chains Glo[toChain].chainSelector;
+                const destinationChainSelector = chains[toChain].chainSelector;
                 const isSupported = await currentRouterContract.methods.isChainSupported(destinationChainSelector).call();
                 if (!isSupported) {
                     status.innerText = `Target chain ${toChain} not supported.`;
@@ -627,7 +543,7 @@
                     extraArgs: '0x'
                 };
                 const fee = await currentRouterContract.methods.getFee(destinationChainSelector, message).call();
-                console.log(`Estimated fee: ${web3.utils.fromWei(fee, 'ether')} BONE`);
+                console.log(`Estimated fee: ${web3.utils.fromWei(fee, 'ether')} BNB`);
 
                 status.innerText = "Initiating cross-chain transfer...";
                 const tx = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).send({
