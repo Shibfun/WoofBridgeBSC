@@ -1,1 +1,658 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woofswap - Base to BNB Chain Bridge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            position: relative;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .connect-section button {
+            padding: 12px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+        .connect-section button:hover { background: #e68a00; }
+        .swap-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        .chain-display, .token-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .token-display div {
+            display: flex;
+            align-items: center;
+        }
+        .token-display img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        select {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        select:focus { outline: none; }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
+            text-align: right;
+        }
+        .percentage-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .percentage-buttons button {
+            padding: 5px 10px;
+            background: #4a4f7a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: var(--text-color);
+            flex: 1;
+        }
+        .percentage-buttons button:hover { background: #5a5f8a; }
+        .swap-button {
+            padding: 15px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .swap-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .swap-button:hover:not(:disabled) { background: #e68a00; }
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .swap-note {
+            font-size: 0.9em;
+            color: #ff9100;
+            margin-top: 5px;
+            text-align: left;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .dog-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .dog-section img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .dog-message {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+            .percentage-buttons button { padding: 5px; }
+            .dog-section img { width: 50px; height: 50px; }
+            .dog-message { font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Woofswap - Base to BNB Chain Bridge</div>
+        <div class="connect-section">
+            <button id="connectWalletButton">Connect Wallet</button>
+            <div id="networkStatus" class="status">Click to connect...</div>
+        </div>
+        <div class="swap-box">
+            <div class="balance-row">
+                <span>From</span>
+                <span id="fromBalance">Balance: 0</span>
+            </div>
+            <div class="chain-display">
+                <span>Base</span>
+            </div>
+            <div class="token-display">
+                <div>
+                    <img id="fromTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
+                    <span id="fromTokenName">LUISA</span>
+                </div>
+                <select id="tokenSelector" onchange="updateTokenSelection()">
+                    <option value="LUISA">LUISA</option>
+                    <option value="USAGI">USAGI</option>
+                    <option value="NEKO">NEKO</option>
+                    <option value="CANNED">CANNED</option>
+                    <option value="SHIPA">SHIPA</option>
+                    <option value="SNOW">SNOW</option>
+                </select>
+            </div>
+            <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
+            <div class="percentage-buttons">
+                <button onclick="setPercentage(25)">25%</button>
+                <button onclick="setPercentage(50)">50%</button>
+                <button onclick="setPercentage(75)">75%</button>
+                <button onclick="setPercentage(100)">MAX</button>
+            </div>
+        </div>
+        <div class="swap-box">
+            <div class="balance-row">
+                <span>To</span>
+            </div>
+            <div class="chain-display">
+                <span>BNB Chain</span>
+            </div>
+            <div class="token-display">
+                <div>
+                    <img id="toTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
+                    <span id="toTokenName">LUISA</span>
+                </div>
+            </div>
+            <input type="text" id="receiverAddress" placeholder="Receiver Address (defaults to your address)">
+            <div class="swap-note" id="swapNote">Cross-chain transfer powered by Chainlink CCIP</div>
+        </div>
+        <button class="swap-button" id="swapButton" onclick="initiateCrossChainTransfer()">Initiate Transfer</button>
+        <div class="dog-section">
+            <img src="https://www.woofswap.finance/image/tokens/shiba.gif" alt="Shiba Dog">
+            <div class="dog-message" id="dogMessage">"Woof! Connect your wallet to start bridging, pup!"</div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        const tokens = {
+            LUISA: {
+                logo: 'https://www.woofswap.finance/image/tokens/luisa.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
+                    tokenAddress: '0x5699c51660C765e57793D1837B400B241cbC4B46'
+                },
+                BNBChain: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xCa8FaCd0EB11DEB6114d515D136c79C6f4170E87',
+                    tokenAddress: '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9'
+                }
+            },
+            USAGI: {
+                logo: 'https://woofswap.finance/image/tokens/Usagi.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
+                    tokenAddress: '0x760295aa772671f21cd0046d094938d09f2b380d'
+                },
+                BNBChain: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xc488be11a33c20bd21f7940d4a5937e8a8c81fec',
+                    tokenAddress: '0x3a1adb8ef2a37fe127aa62b2fc0399a4a6ad9d79'
+                }
+            },
+            NEKO: {
+                logo: 'https://woofswap.finance/image/tokens/neko1.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
+                    tokenAddress: '0xdb2aa3cdda310ae4e648e0fce5cb6c19a37a9ad8'
+                },
+                BNBChain: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0xdce9cf770345584f2dfaa2ea23625cf3edd6b7cf',
+                    tokenAddress: '0x63a67329f761517570345ee86f791f74f9dc5461'
+                }
+            },
+            CANNED: {
+                logo: 'https://www.woofswap.finance/image/tokens/CANNED.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x5d7ccbaa5b0d65aa8a2ed5989b32c64963fdf370',
+                    tokenAddress: '0xa2e543ee6531bb9640dde7ad018ea965cd936a67'
+                },
+                BNBChain: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0x9076efcac1a98df0edc756e3892ed0f54a2f4a29',
+                    tokenAddress: '0x5d63c604803bbf7919953b73c89309b5cbcc227a'
+                }
+            },
+            SHIPA: {
+                logo: 'https://woofswap.finance/image/tokens/shipa.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x54169d9660c21a83c68eb7aed04ae87ff1b69d5c',
+                    tokenAddress: '0x74b017277bffc58be2d4d61097a69d584dcaf32f'
+                },
+                BNBChain: {
+                    mechanism: 'Lock & Release',
+                    poolAddress: '0x67a3b613b2398b43e0b12dd6a07b30cdacb6a61d',
+                    tokenAddress: '0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad'
+                }
+            },
+            SNOW: {
+                logo: 'https://woofswap.finance/image/tokens/Snow.png',
+                Base: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0xa0ffe2d845aee8de1dbd652881d8cab3607fd0d5',
+                    tokenAddress: '0xd62cf77508b80d5776aaac9ca06227ff84cc845c'
+                },
+                BNBChain: {
+                    mechanism: 'Burn & Mint',
+                    poolAddress: '0x5e2e4a679e9e6c484c1095388a8f829851901746',
+                    tokenAddress: '0x19e846c0341260f516b441e0b72a078218f514b0'
+                }
+            }
+        };
+
+        const chains = {
+            Base: {
+                chainId: 8453,
+                chainName: 'Base',
+                rpcUrl: 'https://mainnet.base.org',
+                chainSelector: '15971525489660198786',
+                routerAddress: '0x881e3A65B4d4a04dD529061dd0071cf975F58bCD'
+            },
+            BNBChain: {
+                chainId: 56,
+                chainName: 'BNB Chain',
+                rpcUrl: 'https://bsc-dataseed.binance.org/',
+                chainSelector: '11344663589394136015',
+                routerAddress: '0x34B03Cb9086d7D758AC55af71584F81A598759FE'
+            }
+        };
+
+        const routerAbi = [{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"},{"internalType":"address","name":"armProxy","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadARMSignal","type":"error"},{"inputs":[],"name":"FailedToSendValue","type":"error"},{"inputs":[],"name":"InsufficientFeeTokenAmount","type":"error"},{"inputs":[],"name":"InvalidMsgValue","type":"error"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"InvalidRecipientAddress","type":"error"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampMismatch","type":"error"},{"inputs":[],"name":"OnlyOffRamp","type":"error"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"UnsupportedDestinationChain","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"messageId","type":"bytes32"},{"indexed":false,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"},{"indexed":false,"internalType":"bytes32","name":"calldataHash","type":"bytes32"}],"name":"MessageExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"offRamp","type":"address"}],"name":"OffRampRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"indexed":false,"internalType":"address","name":"onRamp","type":"address"}],"name":"OnRampSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"MAX_RET_BYTES","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"},{"internalType":"address","name":"onRamp","type":"address"}],"internalType":"struct Router.OnRamp[]","name":"onRampUpdates","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampRemoves","type":"tuple[]"},{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"offRampAdds","type":"tuple[]"}],"name":"applyRampUpdates","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"ccipSend","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getArmProxy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destinationChainSelector","type":"uint64"},{"components":[{"internalType":"bytes","name":"receiver","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"tokenAmounts","type":"tuple[]"},{"internalType":"address","name":"feeToken","type":"address"},{"internalType":"bytes","name":"extraArgs","type":"bytes"}],"internalType":"struct Client.EVM2AnyMessage","name":"message","type":"tuple"}],"name":"getFee","outputs":[{"internalType":"uint256","name":"fee","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getOffRamps","outputs":[{"components":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"internalType":"struct Router.OffRamp[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"destChainSelector","type":"uint64"}],"name":"getOnRamp","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"getSupportedTokens","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getWrappedNative","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"chainSelector","type":"uint64"}],"name":"isChainSupported","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"address","name":"offRamp","type":"address"}],"name":"isOffRamp","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"recoverTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"bytes32","name":"messageId","type":"bytes32"},{"internalType":"uint64","name":"sourceChainSelector","type":"uint64"},{"internalType":"bytes","name":"sender","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"},{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Client.EVMTokenAmount[]","name":"destTokenAmounts","type":"tuple[]"}],"internalType":"struct Client.Any2EVMMessage","name":"message","type":"tuple"},{"internalType":"uint16","name":"gasForCallExactCheck","type":"uint16"},{"internalType":"uint256","name":"gasLimit","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"}],"name":"routeMessage","outputs":[{"internalType":"bool","name":"success","type":"bool"},{"internalType":"bytes","name":"retData","type":"bytes"},{"internalType":"uint256","name":"gasUsed","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"wrappedNative","type":"address"}],"name":"setWrappedNative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+
+        const erc20Abi = [
+            {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},
+            {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"type":"function"},
+            {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
+        ];
+
+        let web3, account, currentRouterContract, currentTokenContract, fromBalance = '0';
+        const fromChain = 'Base';
+        const toChain = 'BNBChain';
+        let selectedToken = 'LUISA';
+
+        const dogMessages = {
+            connectSuccess: [
+                "Woof! Wallet connected, ready to bridge, pup!",
+                "Arf! You're in, let's get bridging!",
+                "Bark! Wallet's ready, time to cross chains!"
+            ],
+            connectFail: [
+                "Woof! Couldn't connect wallet, try again, pup!",
+                "Arf! Wallet connection failed, give it another go!",
+                "Bark! Something went wrong, check your wallet!"
+            ],
+            transferStart: [
+                "Woof! Bridging your tokens, hold tight, pup!",
+                "Arf! Sending your tokens across the chain!",
+                "Bark! Cross-chain transfer in progress!"
+            ],
+            transferSuccess: [
+                "Woof! Transfer initiated, your tokens are on their way!",
+                "Arf! Bridge complete, check the destination chain!",
+                "Bark! Success! Your tokens are crossing chains!"
+            ],
+            transferFail: [
+                "Woof! Transfer failed, check the details, pup!",
+                "Arf! Something went wrong, try again!",
+                "Bark! Bridge hit a snag, review and retry!"
+            ],
+            transferNoAmount: [
+                "Woof! Enter an amount to bridge, pup!",
+                "Arf! Can't bridge nothing, pick an amount!",
+                "Bark! Need an amount to cross the chain!"
+            ],
+            userDenied: [
+                "Woof! You canceled the transaction, pup!",
+                "Arf! Transaction denied, try again when ready!",
+                "Bark! You said no, let's try that again!"
+            ]
+        };
+
+        function getRandomMessage(type) {
+            const messages = dogMessages[type];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function updateTokenSelection() {
+            selectedToken = document.getElementById('tokenSelector').value;
+            const tokenConfig = tokens[selectedToken];
+            document.getElementById('fromTokenLogo').src = tokenConfig.logo;
+            document.getElementById('fromTokenName').innerText = selectedToken;
+            document.getElementById('toTokenLogo').src = tokenConfig.logo;
+            document.getElementById('toTokenName').innerText = selectedToken;
+            initializeContracts();
+            updateBalances();
+        }
+
+        async function initializeWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const accounts = await web3.eth.getAccounts();
+                    account = accounts[0];
+                    document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                    await switchNetwork(fromChain);
+                    await initializeContracts();
+                    await updateBalances();
+                    document.getElementById('networkStatus').innerText = `Connected to ${fromChain}`;
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
+                } catch (error) {
+                    document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
+                    console.error("Wallet connection error:", error);
+                }
+            } else {
+                document.getElementById('networkStatus').innerText = 'Please install MetaMask';
+                document.getElementById('dogMessage').innerText = 'Woof! MetaMask not found, pup!';
+            }
+        }
+
+        async function switchNetwork(chain) {
+            const chainConfig = chains[chain];
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: `0x${chainConfig.chainId.toString(16)}` }]
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: `0x${chainConfig.chainId.toString(16)}`,
+                            chainName: chainConfig.chainName,
+                            rpcUrls: [chainConfig.rpcUrl],
+                            nativeCurrency: { name: chainConfig.chainName, symbol: chain === 'Base' ? 'ETH' : 'BNB', decimals: 18 },
+                            blockExplorerUrls: [chain === 'Base' ? 'https://basescan.org' : 'https://bscscan.com']
+                        }]
+                    });
+                } else {
+                    throw switchError;
+                }
+            }
+            await initializeContracts();
+        }
+
+        async function initializeContracts() {
+            const chainConfig = chains[fromChain];
+            const tokenConfig = tokens[selectedToken][fromChain];
+            currentRouterContract = new web3.eth.Contract(routerAbi, chainConfig.routerAddress);
+            currentTokenContract = new web3.eth.Contract(erc20Abi, tokenConfig.tokenAddress);
+        }
+
+        async function updateBalances() {
+            if (!web3 || !account) return;
+            try {
+                const tokenConfig = tokens[selectedToken][fromChain];
+                const fromTokenContract = new web3.eth.Contract(erc20Abi, tokenConfig.tokenAddress);
+                const fromBalanceRaw = await fromTokenContract.methods.balanceOf(account).call();
+                fromBalance = web3.utils.fromWei(fromBalanceRaw, 'ether');
+                document.getElementById('fromBalance').innerText = `Balance: ${parseFloat(fromBalance).toFixed(4)}`;
+            } catch (error) {
+                document.getElementById('fromBalance').innerText = 'Balance: Error';
+                console.error("Balance update error:", error);
+            }
+        }
+
+        async function setPercentage(percentage) {
+            if (!fromBalance) return;
+            const amount = (parseFloat(fromBalance) * percentage) / 100;
+            document.getElementById('fromAmount').value = amount.toFixed(4);
+        }
+
+        async function waitForTransaction(txHash) {
+            let receipt = null;
+            const maxAttempts = 30;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                receipt = await web3.eth.getTransactionReceipt(txHash);
+                if (receipt) {
+                    if (receipt.status) {
+                        console.log(`Transaction ${txHash} confirmed`);
+                        return receipt;
+                    } else {
+                        throw new Error(`Transaction ${txHash} failed`);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            throw new Error(`Transaction ${txHash} not confirmed after ${maxAttempts} attempts`);
+        }
+
+        async function waitForAllowance(tokenContract, owner, spender, requiredAmount) {
+            const maxAttempts = 10;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                const allowance = await tokenContract.methods.allowance(owner, spender).call();
+                if (web3.utils.toBN(allowance).gte(web3.utils.toBN(requiredAmount))) {
+                    console.log(`Allowance confirmed: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}`);
+                    return;
+                }
+                console.log(`Allowance not yet updated: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}, required: ${web3.utils.fromWei(requiredAmount, 'ether')} ${selectedToken}`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            throw new Error("Allowance not updated after timeout");
+        }
+
+        async function approveToken(tokenAddress, amount) {
+            const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
+            const routerAddress = chains[fromChain].routerAddress;
+            const allowance = await tokenContract.methods.allowance(account, routerAddress).call();
+            console.log(`Current allowance for Router ${routerAddress}: ${web3.utils.fromWei(allowance, 'ether')} ${selectedToken}, Required: ${web3.utils.fromWei(amount, 'ether')} ${selectedToken}`);
+            if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
+                console.log(`Approving unlimited ${selectedToken} for Router contract ${routerAddress}`);
+                const maxUint256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+                const approveTx = await tokenContract.methods.approve(routerAddress, maxUint256).send({ from: account, gas: web3.utils.toHex(100000) });
+                console.log(`Approval transaction hash: ${approveTx.transactionHash}`);
+                await waitForTransaction(approveTx.transactionHash);
+                await waitForAllowance(tokenContract, account, routerAddress, amount);
+            } else {
+                console.log("Sufficient allowance already exists");
+            }
+        }
+
+        async function initiateCrossChainTransfer() {
+            const status = document.getElementById('networkStatus');
+            const swapButton = document.getElementById('swapButton');
+            const dogMessage = document.getElementById('dogMessage');
+
+            if (!web3 || !account) {
+                status.innerText = "Please connect wallet first.";
+                dogMessage.innerText = getRandomMessage('connectFail');
+                swapButton.disabled = false;
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('fromAmount').value);
+            if (!amount || amount <= 0 || isNaN(amount)) {
+                status.innerText = "Please enter a valid amount.";
+                dogMessage.innerText = getRandomMessage('transferNoAmount');
+                swapButton.disabled = false;
+                return;
+            }
+
+            let receiver = document.getElementById('receiverAddress').value.trim();
+            if (!receiver) receiver = account;
+            if (!web3.utils.isAddress(receiver) || receiver.length !== 42) {
+                status.innerText = "Invalid receiver address (must be 42 characters starting with 0x).";
+                dogMessage.innerText = "Woof! That address doesn’t smell right, pup!";
+                swapButton.disabled = false;
+                return;
+            }
+
+            const amountWei = web3.utils.toWei(amount.toString(), 'ether');
+            const balanceRaw = await currentTokenContract.methods.balanceOf(account).call();
+            const balanceWei = web3.utils.toBN(balanceRaw);
+            if (balanceWei.lt(web3.utils.toBN(amountWei))) {
+                status.innerText = "Insufficient token balance.";
+                dogMessage.innerText = `Woof! Not enough ${selectedToken} to bridge, pup!`;
+                swapButton.disabled = false;
+                return;
+            }
+
+            try {
+                swapButton.disabled = true;
+                status.innerText = "Checking chain support...";
+                dogMessage.innerText = getRandomMessage('transferStart');
+
+                const destinationChainSelector = chains[toChain].chainSelector;
+                const isSupported = await currentRouterContract.methods.isChainSupported(destinationChainSelector).call();
+                if (!isSupported) {
+                    status.innerText = `Target chain ${toChain} not supported.`;
+                    dogMessage.innerText = `Woof! Can't bridge to ${toChain}, pup!`;
+                    swapButton.disabled = false;
+                    return;
+                }
+
+                const onRampAddress = await currentRouterContract.methods.getOnRamp(destinationChainSelector).call();
+                console.log(`OnRamp address for chain ${destinationChainSelector}: ${onRampAddress}`);
+                if (onRampAddress === '0x0000000000000000000000000000000000000000') {
+                    status.innerText = `OnRamp not configured for ${toChain}.`;
+                    dogMessage.innerText = `Woof! Bridge to ${toChain} not ready, pup!`;
+                    swapButton.disabled = false;
+                    return;
+                }
+
+                status.innerText = `Approving ${selectedToken}...`;
+                await approveToken(tokens[selectedToken][fromChain].tokenAddress, amountWei);
+
+                status.innerText = "Estimating fees...";
+                const message = {
+                    receiver: web3.utils.padLeft(receiver, 64),
+                    data: '0x',
+                    tokenAmounts: [{
+                        token: tokens[selectedToken][fromChain].tokenAddress,
+                        amount: amountWei
+                    }],
+                    feeToken: '0x0000000000000000000000000000000000000000',
+                    extraArgs: '0x'
+                };
+                const fee = await currentRouterContract.methods.getFee(destinationChainSelector, message).call();
+                console.log(`Estimated fee: ${web3.utils.fromWei(fee, 'ether')} BNB`);
+
+                status.innerText = "Initiating cross-chain transfer...";
+                const tx = await currentRouterContract.methods.ccipSend(destinationChainSelector, message).send({
+                    from: account,
+                    value: fee,
+                    gas: web3.utils.toHex(3000000)
+                });
+
+                status.innerText = `Transfer initiated! Tx Hash: ${tx.transactionHash}`;
+                dogMessage.innerText = getRandomMessage('transferSuccess');
+            } catch (error) {
+                if (error.code === 4001) {
+                    status.innerText = "Transaction canceled by user.";
+                    dogMessage.innerText = getRandomMessage('userDenied');
+                } else {
+                    status.innerText = "Transfer failed.";
+                    dogMessage.innerText = getRandomMessage('transferFail');
+                    console.error("Transfer error:", error);
+                }
+            } finally {
+                swapButton.disabled = false;
+            }
+        }
+
+        document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
+    </script>
+</body>
+</html>
