@@ -211,7 +211,7 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img id="fromTokenLogo" src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="Token">
+                    <img id="fromTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
                     <span id="fromTokenName">LUISA</span>
                 </div>
 <select id="tokenSelector" onchange="updateTokenSelection()">
@@ -220,6 +220,7 @@
     <option value="NEKO">NEKO</option>
     <option value="CANNED">CANNED</option>
     <option value="SHIPA">SHIPA</option>
+    <option value="SNOW">SNOW</option>
 </select>
             </div>
             <input type="number" id="fromAmount" placeholder="0.0" step="0.01">
@@ -239,7 +240,7 @@
             </div>
             <div class="token-display">
                 <div>
-                    <img id="toTokenLogo" src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png" alt="Token">
+                    <img id="toTokenLogo" src="https://www.woofswap.finance/image/tokens/luisa.png" alt="Token">
                     <span id="toTokenName">LUISA</span>
                 </div>
             </div>
@@ -248,7 +249,7 @@
         </div>
         <button class="swap-button" id="swapButton" onclick="initiateCrossChainTransfer()">Initiate Transfer</button>
         <div class="dog-section">
-            <img src="images/shiba.gif" alt="Shiba Dog">
+            <img src="https://www.woofswap.finance/image/tokens/shiba.gif" alt="Shiba Dog">
             <div class="dog-message" id="dogMessage">"Woof! Connect your wallet to start bridging, pup!"</div>
         </div>
     </div>
@@ -256,7 +257,7 @@
     <script>
 const tokens = {
     LUISA: {
-        logo: 'https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/luisa.png',
+        logo: 'https://www.woofswap.finance/image/tokens/luisa.png',
         Base: {
             mechanism: 'Burn & Mint',
             poolAddress: '0xe9516fb95778682f48c551071bb917f937229596',
@@ -269,7 +270,7 @@ const tokens = {
         }
     },
     USAGI: {
-        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/Usagi.png',
+        logo: 'https://woofswap.finance/image/tokens/Usagi.png',
         Base: {
             mechanism: 'Burn & Mint',
             poolAddress: '0x7c458207b7b0e4eca3c54f3353b2db00a81a04aa',
@@ -282,7 +283,7 @@ const tokens = {
         }
     },
     NEKO: {
-        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/neko.png',
+        logo: 'https://woofswap.finance/image/tokens/neko1.png',
         Base: {
             mechanism: 'Burn & Mint',
             poolAddress: '0x6a9a43871a8d468acf6309f8459bc9623a0f169c',
@@ -295,7 +296,7 @@ const tokens = {
         }
     },
     CANNED: {
-        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/CANNED.png',
+        logo: 'https://www.woofswap.finance/image/tokens/CANNED.png',
         Base: {
             mechanism: 'Burn & Mint',
             poolAddress: '0x5d7ccbaa5b0d65aa8a2ed5989b32c64963fdf370',
@@ -308,7 +309,7 @@ const tokens = {
         }
     },
     SHIPA: {
-        logo: 'https://raw.githubusercontent.com/Shibfun/WoofBridge/refs/heads/main/images/shipa.png',
+        logo: 'https://woofswap.finance/image/tokens/shipa.png',
         Base: {
             mechanism: 'Burn & Mint',
             poolAddress: '0x54169d9660c21a83c68eb7aed04ae87ff1b69d5c',
@@ -318,6 +319,19 @@ const tokens = {
             mechanism: 'Lock & Release',
             poolAddress: '0x67a3b613b2398b43e0b12dd6a07b30cdacb6a61d',
             tokenAddress: '0x632d1ff1fb27d88ededb90e70bfc094d7932a0ad'
+        }
+    },
+    SNOW: {
+        logo: 'https://woofswap.finance/image/tokens/Snow.png',
+        Base: {
+            mechanism: 'Burn & Mint',
+            poolAddress: '0xa0ffe2d845aee8de1dbd652881d8cab3607fd0d5',
+            tokenAddress: '0xd62cf77508b80d5776aaac9ca06227ff84cc845c'
+        },
+        Shibarium: {
+            mechanism: 'Lock & Release',
+            poolAddress: '0xe3c8b709c43c4fa4d2535f354e28e6ffc2614b69',
+            tokenAddress: '0x2778f7e40d90db18203ec31c9c5f84fde6cf6763'
         }
     }
 };
